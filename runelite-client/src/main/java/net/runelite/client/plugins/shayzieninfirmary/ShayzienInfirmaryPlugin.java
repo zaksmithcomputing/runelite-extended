@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2019, Owain van Brakel <https://github.com/Owain94>
  * Copyright (c) 2019, Yani <yani@xenokore.com>
  * All rights reserved.
  *
@@ -33,7 +34,10 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.NPC;
-import net.runelite.api.events.GameTick;
+import net.runelite.api.events.GameStateChanged;
+import net.runelite.api.events.NpcDefinitionChanged;
+import net.runelite.api.events.NpcDespawned;
+import net.runelite.api.events.NpcSpawned;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
@@ -51,9 +55,6 @@ import net.runelite.client.ui.overlay.OverlayManager;
 @Singleton
 public class ShayzienInfirmaryPlugin extends Plugin
 {
-	@Getter(AccessLevel.PACKAGE)
-	private List<NPC> unhealedSoldiers = new ArrayList<>();
-
 	@Inject
 	private OverlayManager overlayManager;
 
@@ -66,48 +67,62 @@ public class ShayzienInfirmaryPlugin extends Plugin
 	@Inject
 	private ShayzienInfirmaryOverlay overlay;
 
+	@Getter(AccessLevel.PACKAGE)
+	private List<NPC> unhealedSoldiers = new ArrayList<>();
+
 	@Override
 	protected void startUp() throws Exception
 	{
-		eventBus.subscribe(GameTick.class, this, this::onGameTick);
-
-		loadPlugin();
+		addSubscriptions();
+		overlayManager.add(overlay);
 	}
 
 	@Override
 	protected void shutDown() throws Exception
 	{
 		eventBus.unregister(this);
-
-		unloadPlugin();
-	}
-
-	private void loadPlugin()
-	{
-		overlayManager.add(overlay);
-	}
-
-	private void unloadPlugin()
-	{
+		unhealedSoldiers.clear();
 		overlayManager.remove(overlay);
 	}
 
-	private void onGameTick(GameTick event)
+	private void addSubscriptions()
 	{
-		if (isNotAtInfirmary())
-		{
-			return;
-		}
+		eventBus.subscribe(NpcSpawned.class, this, this::onNpcSpawned);
+		eventBus.subscribe(NpcDefinitionChanged.class, this, this::onNpcDefinitionChanged);
+		eventBus.subscribe(NpcDespawned.class, this, this::onNpcDespawned);
+		eventBus.subscribe(GameStateChanged.class, this, this::onGameStateChanged);
+	}
 
+	private void onGameStateChanged(GameStateChanged event)
+	{
 		unhealedSoldiers.clear();
+	}
 
-		for (NPC npc : client.getNpcs())
+	private void onNpcSpawned(NpcSpawned npcSpawned)
+	{
+		NPC npc = npcSpawned.getNpc();
+
+		if (isUnhealedSoldierId(npc.getId()))
 		{
-			if (isUnhealedSoldierId(npc.getId()))
-			{
-				unhealedSoldiers.add(npc);
-			}
+			unhealedSoldiers.add(npc);
 		}
+	}
+
+	private void onNpcDefinitionChanged(NpcDefinitionChanged npcDefinitionChanged)
+	{
+		NPC npc = npcDefinitionChanged.getNpc();
+
+		if (isUnhealedSoldierId(npc.getId()))
+		{
+			unhealedSoldiers.remove(npc);
+		}
+	}
+
+	private void onNpcDespawned(NpcDespawned npcDespawned)
+	{
+		final NPC npc = npcDespawned.getNpc();
+
+		unhealedSoldiers.remove(npc);
 	}
 
 	private boolean isSoldierId(int npcId)
@@ -122,6 +137,11 @@ public class ShayzienInfirmaryPlugin extends Plugin
 
 	boolean isNotAtInfirmary()
 	{
+		if (client == null || client.getLocalPlayer() == null)
+		{
+			return true;
+		}
+
 		return client.getLocalPlayer().getWorldLocation().getRegionID() != 6200;
 	}
 }
