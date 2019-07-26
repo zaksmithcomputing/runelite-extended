@@ -49,7 +49,7 @@ public class EventBus implements EventBusInterface
 			.subscribe(action, error ->
 			{
 				log.error("Error in eventbus: {}", error.getMessage());
-				log.error("{}", ExceptionUtils.getStackTrace(error));
+				log.error(ExceptionUtils.getStackTrace(error));
 			});
 
 		getCompositeDisposable(lifecycle).add(disposable);
