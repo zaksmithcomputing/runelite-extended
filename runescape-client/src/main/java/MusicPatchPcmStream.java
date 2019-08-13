@@ -269,9 +269,9 @@ public class MusicPatchPcmStream extends PcmStream {
 			int var23 = var7 + var1 - var16;
 			int var24 = var7 + var15 + var1;
 			Rasterizer3D.method2981(var17, var18, var19);
-			Rasterizer3D.method3007(var21, var22, var23, var17, var18, var19, var4);
+			Rasterizer3D.Rasterizer3D_horiz(var21, var22, var23, var17, var18, var19, var4);
 			Rasterizer3D.method2981(var17, var19, var20);
-			Rasterizer3D.method3007(var21, var23, var24, var17, var19, var20, var4);
+			Rasterizer3D.Rasterizer3D_horiz(var21, var23, var24, var17, var19, var20, var4);
 		}
 	}
 }

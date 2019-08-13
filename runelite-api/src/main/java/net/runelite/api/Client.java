@@ -26,6 +26,7 @@ package net.runelite.api;
 
 import java.awt.Canvas;
 import java.awt.Dimension;
+import java.awt.image.BufferedImage;
 import java.math.BigInteger;
 import java.util.EnumSet;
 import java.util.List;
@@ -996,6 +997,8 @@ public interface Client extends GameShell
 	 * @return the buffer provider
 	 */
 	BufferProvider getBufferProvider();
+
+	BufferedImage getUnderObjectBuffer();
 
 	/**
 	 * Gets the amount of client ticks since the last mouse movement occurred.

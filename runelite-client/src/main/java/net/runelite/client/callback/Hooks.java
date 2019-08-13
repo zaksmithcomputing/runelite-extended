@@ -407,6 +407,21 @@ public class Hooks implements Callbacks
 		return image;
 	}
 
+	public void beforeDrawScene()
+	{
+		BufferedImage image = client.getUnderObjectBuffer();
+		Graphics2D graphics2d = (Graphics2D) image.getGraphics();
+
+		try
+		{
+			renderer.render(graphics2d, OverlayLayer.BELOW_OBJECTS);
+		}
+		catch (Exception ex)
+		{
+			log.warn("Error during overlay rendering", ex);
+		}
+	}
+
 	@Override
 	public void drawScene()
 	{

@@ -7,7 +7,7 @@ import net.runelite.mapping.ObfuscatedSignature;
 @Implements("Rasterizer3D")
 public class Rasterizer3D extends Rasterizer2D {
 	@ObfuscatedName("q")
-	static boolean field1763;
+	static boolean Rasterizer3D_rasterClipEnable;
 	@ObfuscatedName("w")
 	static boolean field1772;
 	@ObfuscatedName("e")
@@ -69,7 +69,7 @@ public class Rasterizer3D extends Rasterizer2D {
 	public static int[] Rasterizer3D_cosine;
 
 	static {
-		field1763 = false;
+		Rasterizer3D_rasterClipEnable = false;
 		field1772 = false;
 		Rasterizer3D_isLowDetailTexture = false;
 		field1768 = true;
@@ -268,11 +268,12 @@ public class Rasterizer3D extends Rasterizer2D {
 
 	@ObfuscatedName("c")
 	public static void method2981(int var0, int var1, int var2) {
-		field1763 = var0 < 0 || var0 > Rasterizer3D_clipWidth || var1 < 0 || var1 > Rasterizer3D_clipWidth || var2 < 0 || var2 > Rasterizer3D_clipWidth;
+		Rasterizer3D_rasterClipEnable = var0 < 0 || var0 > Rasterizer3D_clipWidth || var1 < 0 || var1 > Rasterizer3D_clipWidth || var2 < 0 || var2 > Rasterizer3D_clipWidth;
 	}
 
 	@ObfuscatedName("u")
-	static final void method3020(int var0, int var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8) {
+	@Export("Rasterizer3D_vert")
+	static final void Rasterizer3D_vert(int var0, int var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8) {
 		int var9 = var4 - var3;
 		int var10 = var1 - var0;
 		int var11 = var5 - var3;
@@ -771,7 +772,7 @@ public class Rasterizer3D extends Rasterizer2D {
 	@ObfuscatedName("x")
 	@Export("Rasterizer3D_vertAlpha")
 	static final void Rasterizer3D_vertAlpha(int[] var0, int var1, int var2, int var3, int var4, int var5, int var6, int var7) {
-		if (field1763) {
+		if (Rasterizer3D_rasterClipEnable) {
 			if (var5 > Rasterizer3D_clipWidth) {
 				var5 = Rasterizer3D_clipWidth;
 			}
@@ -872,7 +873,8 @@ public class Rasterizer3D extends Rasterizer2D {
 	}
 
 	@ObfuscatedName("r")
-	public static final void method3007(int var0, int var1, int var2, int var3, int var4, int var5, int var6) {
+	@Export("Rasterizer3D_horiz")
+	public static final void Rasterizer3D_horiz(int var0, int var1, int var2, int var3, int var4, int var5, int var6) {
 		int var7 = 0;
 		if (var0 != var1) {
 			var7 = (var4 - var3 << 14) / (var1 - var0);
@@ -1321,7 +1323,7 @@ public class Rasterizer3D extends Rasterizer2D {
 	@ObfuscatedName("v")
 	@Export("Rasterizer3D_horizAlpha")
 	static final void Rasterizer3D_horizAlpha(int[] var0, int var1, int var2, int var3, int var4, int var5) {
-		if (field1763) {
+		if (Rasterizer3D_rasterClipEnable) {
 			if (var5 > Rasterizer3D_clipWidth) {
 				var5 = Rasterizer3D_clipWidth;
 			}
@@ -1412,12 +1414,13 @@ public class Rasterizer3D extends Rasterizer2D {
 	}
 
 	@ObfuscatedName("y")
-	static final void method2986(int var0, int var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11, int var12, int var13, int var14, int var15, int var16, int var17, int var18) {
+	@Export("Rasterizer3D_textureAffine")
+	static final void Rasterizer3D_textureAffine(int var0, int var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11, int var12, int var13, int var14, int var15, int var16, int var17, int var18) {
 		int[] var19 = Rasterizer3D_textureLoader.load(var18);
 		int var20;
 		if (var19 == null) {
 			var20 = Rasterizer3D_textureLoader.getAverageTextureRGB(var18);
-			method3020(var0, var1, var2, var3, var4, var5, method3045(var20, var6), method3045(var20, var7), method3045(var20, var8));
+			Rasterizer3D_vert(var0, var1, var2, var3, var4, var5, method3045(var20, var6), method3045(var20, var7), method3045(var20, var8));
 		} else {
 			Rasterizer3D_isLowDetailTexture = Rasterizer3D_textureLoader.isLowDetail(var18);
 			field1772 = Rasterizer3D_textureLoader.vmethod3278(var18);
@@ -1506,7 +1509,7 @@ public class Rasterizer3D extends Rasterizer2D {
 												return;
 											}
 
-											Rasterizer3D_iDontKnow(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var0, var5 >> 14, var4 >> 14, var6, var30, var32, var35, var38, var33, var36, var39);
+											Rasterizer3D_textureAffineAlpha(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var0, var5 >> 14, var4 >> 14, var6, var30, var32, var35, var38, var33, var36, var39);
 											var5 += var28;
 											var4 += var27;
 											var6 += var31;
@@ -1517,7 +1520,7 @@ public class Rasterizer3D extends Rasterizer2D {
 										}
 									}
 
-									Rasterizer3D_iDontKnow(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var0, var5 >> 14, var3 >> 14, var6, var30, var32, var35, var38, var33, var36, var39);
+									Rasterizer3D_textureAffineAlpha(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var0, var5 >> 14, var3 >> 14, var6, var30, var32, var35, var38, var33, var36, var39);
 									var5 += var28;
 									var3 += var26;
 									var6 += var31;
@@ -1540,7 +1543,7 @@ public class Rasterizer3D extends Rasterizer2D {
 											return;
 										}
 
-										Rasterizer3D_iDontKnow(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var0, var4 >> 14, var5 >> 14, var6, var30, var32, var35, var38, var33, var36, var39);
+										Rasterizer3D_textureAffineAlpha(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var0, var4 >> 14, var5 >> 14, var6, var30, var32, var35, var38, var33, var36, var39);
 										var5 += var28;
 										var4 += var27;
 										var6 += var31;
@@ -1551,7 +1554,7 @@ public class Rasterizer3D extends Rasterizer2D {
 									}
 								}
 
-								Rasterizer3D_iDontKnow(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var0, var3 >> 14, var5 >> 14, var6, var30, var32, var35, var38, var33, var36, var39);
+								Rasterizer3D_textureAffineAlpha(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var0, var3 >> 14, var5 >> 14, var6, var30, var32, var35, var38, var33, var36, var39);
 								var5 += var28;
 								var3 += var26;
 								var6 += var31;
@@ -1593,7 +1596,7 @@ public class Rasterizer3D extends Rasterizer2D {
 											return;
 										}
 
-										Rasterizer3D_iDontKnow(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var0, var5 >> 14, var3 >> 14, var6, var30, var32, var35, var38, var33, var36, var39);
+										Rasterizer3D_textureAffineAlpha(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var0, var5 >> 14, var3 >> 14, var6, var30, var32, var35, var38, var33, var36, var39);
 										var5 += var27;
 										var3 += var26;
 										var6 += var31;
@@ -1604,7 +1607,7 @@ public class Rasterizer3D extends Rasterizer2D {
 									}
 								}
 
-								Rasterizer3D_iDontKnow(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var0, var4 >> 14, var3 >> 14, var6, var30, var32, var35, var38, var33, var36, var39);
+								Rasterizer3D_textureAffineAlpha(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var0, var4 >> 14, var3 >> 14, var6, var30, var32, var35, var38, var33, var36, var39);
 								var4 += var28;
 								var3 += var26;
 								var6 += var31;
@@ -1627,7 +1630,7 @@ public class Rasterizer3D extends Rasterizer2D {
 										return;
 									}
 
-									Rasterizer3D_iDontKnow(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var0, var3 >> 14, var5 >> 14, var6, var30, var32, var35, var38, var33, var36, var39);
+									Rasterizer3D_textureAffineAlpha(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var0, var3 >> 14, var5 >> 14, var6, var30, var32, var35, var38, var33, var36, var39);
 									var5 += var27;
 									var3 += var26;
 									var6 += var31;
@@ -1638,7 +1641,7 @@ public class Rasterizer3D extends Rasterizer2D {
 								}
 							}
 
-							Rasterizer3D_iDontKnow(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var0, var3 >> 14, var4 >> 14, var6, var30, var32, var35, var38, var33, var36, var39);
+							Rasterizer3D_textureAffineAlpha(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var0, var3 >> 14, var4 >> 14, var6, var30, var32, var35, var38, var33, var36, var39);
 							var4 += var28;
 							var3 += var26;
 							var6 += var31;
@@ -1692,7 +1695,7 @@ public class Rasterizer3D extends Rasterizer2D {
 												return;
 											}
 
-											Rasterizer3D_iDontKnow(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var1, var3 >> 14, var5 >> 14, var7, var30, var32, var35, var38, var33, var36, var39);
+											Rasterizer3D_textureAffineAlpha(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var1, var3 >> 14, var5 >> 14, var7, var30, var32, var35, var38, var33, var36, var39);
 											var3 += var26;
 											var5 += var28;
 											var7 += var31;
@@ -1703,7 +1706,7 @@ public class Rasterizer3D extends Rasterizer2D {
 										}
 									}
 
-									Rasterizer3D_iDontKnow(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var1, var3 >> 14, var4 >> 14, var7, var30, var32, var35, var38, var33, var36, var39);
+									Rasterizer3D_textureAffineAlpha(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var1, var3 >> 14, var4 >> 14, var7, var30, var32, var35, var38, var33, var36, var39);
 									var3 += var26;
 									var4 += var27;
 									var7 += var31;
@@ -1726,7 +1729,7 @@ public class Rasterizer3D extends Rasterizer2D {
 											return;
 										}
 
-										Rasterizer3D_iDontKnow(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var1, var5 >> 14, var3 >> 14, var7, var30, var32, var35, var38, var33, var36, var39);
+										Rasterizer3D_textureAffineAlpha(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var1, var5 >> 14, var3 >> 14, var7, var30, var32, var35, var38, var33, var36, var39);
 										var3 += var26;
 										var5 += var28;
 										var7 += var31;
@@ -1737,7 +1740,7 @@ public class Rasterizer3D extends Rasterizer2D {
 									}
 								}
 
-								Rasterizer3D_iDontKnow(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var1, var4 >> 14, var3 >> 14, var7, var30, var32, var35, var38, var33, var36, var39);
+								Rasterizer3D_textureAffineAlpha(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var1, var4 >> 14, var3 >> 14, var7, var30, var32, var35, var38, var33, var36, var39);
 								var3 += var26;
 								var4 += var27;
 								var7 += var31;
@@ -1779,7 +1782,7 @@ public class Rasterizer3D extends Rasterizer2D {
 											return;
 										}
 
-										Rasterizer3D_iDontKnow(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var1, var3 >> 14, var4 >> 14, var7, var30, var32, var35, var38, var33, var36, var39);
+										Rasterizer3D_textureAffineAlpha(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var1, var3 >> 14, var4 >> 14, var7, var30, var32, var35, var38, var33, var36, var39);
 										var3 += var28;
 										var4 += var27;
 										var7 += var31;
@@ -1790,7 +1793,7 @@ public class Rasterizer3D extends Rasterizer2D {
 									}
 								}
 
-								Rasterizer3D_iDontKnow(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var1, var5 >> 14, var4 >> 14, var7, var30, var32, var35, var38, var33, var36, var39);
+								Rasterizer3D_textureAffineAlpha(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var1, var5 >> 14, var4 >> 14, var7, var30, var32, var35, var38, var33, var36, var39);
 								var5 += var26;
 								var4 += var27;
 								var7 += var31;
@@ -1813,7 +1816,7 @@ public class Rasterizer3D extends Rasterizer2D {
 										return;
 									}
 
-									Rasterizer3D_iDontKnow(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var1, var4 >> 14, var3 >> 14, var7, var30, var32, var35, var38, var33, var36, var39);
+									Rasterizer3D_textureAffineAlpha(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var1, var4 >> 14, var3 >> 14, var7, var30, var32, var35, var38, var33, var36, var39);
 									var3 += var28;
 									var4 += var27;
 									var7 += var31;
@@ -1824,7 +1827,7 @@ public class Rasterizer3D extends Rasterizer2D {
 								}
 							}
 
-							Rasterizer3D_iDontKnow(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var1, var4 >> 14, var5 >> 14, var7, var30, var32, var35, var38, var33, var36, var39);
+							Rasterizer3D_textureAffineAlpha(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var1, var4 >> 14, var5 >> 14, var7, var30, var32, var35, var38, var33, var36, var39);
 							var5 += var26;
 							var4 += var27;
 							var7 += var31;
@@ -1877,7 +1880,7 @@ public class Rasterizer3D extends Rasterizer2D {
 											return;
 										}
 
-										Rasterizer3D_iDontKnow(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var2, var4 >> 14, var3 >> 14, var8, var30, var32, var35, var38, var33, var36, var39);
+										Rasterizer3D_textureAffineAlpha(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var2, var4 >> 14, var3 >> 14, var8, var30, var32, var35, var38, var33, var36, var39);
 										var4 += var27;
 										var3 += var26;
 										var8 += var31;
@@ -1888,7 +1891,7 @@ public class Rasterizer3D extends Rasterizer2D {
 									}
 								}
 
-								Rasterizer3D_iDontKnow(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var2, var4 >> 14, var5 >> 14, var8, var30, var32, var35, var38, var33, var36, var39);
+								Rasterizer3D_textureAffineAlpha(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var2, var4 >> 14, var5 >> 14, var8, var30, var32, var35, var38, var33, var36, var39);
 								var4 += var27;
 								var5 += var28;
 								var8 += var31;
@@ -1911,7 +1914,7 @@ public class Rasterizer3D extends Rasterizer2D {
 										return;
 									}
 
-									Rasterizer3D_iDontKnow(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var2, var3 >> 14, var4 >> 14, var8, var30, var32, var35, var38, var33, var36, var39);
+									Rasterizer3D_textureAffineAlpha(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var2, var3 >> 14, var4 >> 14, var8, var30, var32, var35, var38, var33, var36, var39);
 									var4 += var27;
 									var3 += var26;
 									var8 += var31;
@@ -1922,7 +1925,7 @@ public class Rasterizer3D extends Rasterizer2D {
 								}
 							}
 
-							Rasterizer3D_iDontKnow(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var2, var5 >> 14, var4 >> 14, var8, var30, var32, var35, var38, var33, var36, var39);
+							Rasterizer3D_textureAffineAlpha(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var2, var5 >> 14, var4 >> 14, var8, var30, var32, var35, var38, var33, var36, var39);
 							var4 += var27;
 							var5 += var28;
 							var8 += var31;
@@ -1964,7 +1967,7 @@ public class Rasterizer3D extends Rasterizer2D {
 										return;
 									}
 
-									Rasterizer3D_iDontKnow(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var2, var4 >> 14, var5 >> 14, var8, var30, var32, var35, var38, var33, var36, var39);
+									Rasterizer3D_textureAffineAlpha(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var2, var4 >> 14, var5 >> 14, var8, var30, var32, var35, var38, var33, var36, var39);
 									var4 += var26;
 									var5 += var28;
 									var8 += var31;
@@ -1975,7 +1978,7 @@ public class Rasterizer3D extends Rasterizer2D {
 								}
 							}
 
-							Rasterizer3D_iDontKnow(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var2, var3 >> 14, var5 >> 14, var8, var30, var32, var35, var38, var33, var36, var39);
+							Rasterizer3D_textureAffineAlpha(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var2, var3 >> 14, var5 >> 14, var8, var30, var32, var35, var38, var33, var36, var39);
 							var3 += var27;
 							var5 += var28;
 							var8 += var31;
@@ -1998,7 +2001,7 @@ public class Rasterizer3D extends Rasterizer2D {
 									return;
 								}
 
-								Rasterizer3D_iDontKnow(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var2, var5 >> 14, var4 >> 14, var8, var30, var32, var35, var38, var33, var36, var39);
+								Rasterizer3D_textureAffineAlpha(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var2, var5 >> 14, var4 >> 14, var8, var30, var32, var35, var38, var33, var36, var39);
 								var4 += var26;
 								var5 += var28;
 								var8 += var31;
@@ -2009,7 +2012,7 @@ public class Rasterizer3D extends Rasterizer2D {
 							}
 						}
 
-						Rasterizer3D_iDontKnow(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var2, var5 >> 14, var3 >> 14, var8, var30, var32, var35, var38, var33, var36, var39);
+						Rasterizer3D_textureAffineAlpha(Rasterizer2D.Rasterizer2D_pixels, var19, 0, 0, var2, var5 >> 14, var3 >> 14, var8, var30, var32, var35, var38, var33, var36, var39);
 						var3 += var27;
 						var5 += var28;
 						var8 += var31;
@@ -2024,9 +2027,9 @@ public class Rasterizer3D extends Rasterizer2D {
 	}
 
 	@ObfuscatedName("g")
-	@Export("Rasterizer3D_iDontKnow")
-	static final void Rasterizer3D_iDontKnow(int[] var0, int[] var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11, int var12, int var13, int var14) {
-		if (field1763) {
+	@Export("Rasterizer3D_textureAffineAlpha")
+	static final void Rasterizer3D_textureAffineAlpha(int[] var0, int[] var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11, int var12, int var13, int var14) {
+		if (Rasterizer3D_rasterClipEnable) {
 			if (var6 > Rasterizer3D_clipWidth) {
 				var6 = Rasterizer3D_clipWidth;
 			}
@@ -2445,12 +2448,13 @@ public class Rasterizer3D extends Rasterizer2D {
 	}
 
 	@ObfuscatedName("a")
-	static final void method2988(int var0, int var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11, int var12, int var13, int var14, int var15, int var16, int var17, int var18) {
+	@Export("Rasterizer3D_texture")
+	static final void Rasterizer3D_texture(int var0, int var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11, int var12, int var13, int var14, int var15, int var16, int var17, int var18) {
 		int[] var19 = Rasterizer3D_textureLoader.load(var18);
 		int var20;
 		if (var19 == null) {
 			var20 = Rasterizer3D_textureLoader.getAverageTextureRGB(var18);
-			method3020(var0, var1, var2, var3, var4, var5, method3045(var20, var6), method3045(var20, var7), method3045(var20, var8));
+			Rasterizer3D_vert(var0, var1, var2, var3, var4, var5, method3045(var20, var6), method3045(var20, var7), method3045(var20, var8));
 		} else {
 			Rasterizer3D_isLowDetailTexture = Rasterizer3D_textureLoader.isLowDetail(var18);
 			field1772 = Rasterizer3D_textureLoader.vmethod3278(var18);
@@ -3059,7 +3063,7 @@ public class Rasterizer3D extends Rasterizer2D {
 	@ObfuscatedName("j")
 	@Export("Rasterizer3D_textureAlpha")
 	static final void Rasterizer3D_textureAlpha(int[] var0, int[] var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11, int var12, int var13, int var14) {
-		if (field1763) {
+		if (Rasterizer3D_rasterClipEnable) {
 			if (var6 > Rasterizer3D_clipWidth) {
 				var6 = Rasterizer3D_clipWidth;
 			}

@@ -76,6 +76,8 @@ public abstract class RSSceneMixin implements RSScene
 	@Replace("draw")
 	void rl$drawScene(int cameraX, int cameraY, int cameraZ, int cameraPitch, int cameraYaw, int plane)
 	{
+		client.getCallbacks().beforeDrawScene();
+
 		final DrawCallbacks drawCallbacks = client.getDrawCallbacks();
 		if (drawCallbacks != null)
 		{

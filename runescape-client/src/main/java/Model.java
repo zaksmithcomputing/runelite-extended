@@ -1370,7 +1370,7 @@ public class Model extends Entity {
 			int var2 = this.indices1[var1];
 			int var3 = this.indices2[var1];
 			int var4 = this.indices3[var1];
-			Rasterizer3D.field1763 = field1710[var1];
+			Rasterizer3D.Rasterizer3D_rasterClipEnable = field1710[var1];
 			if (this.faceAlphas == null) {
 				Rasterizer3D.Rasterizer3D_alpha = 0;
 			} else {
@@ -1393,14 +1393,14 @@ public class Model extends Entity {
 				}
 
 				if (this.faceColors3[var1] == -1) {
-					Rasterizer3D.method2986(modelViewportYs[var2], modelViewportYs[var3], modelViewportYs[var4], modelViewportXs[var2], modelViewportXs[var3], modelViewportXs[var4], this.faceColors1[var1], this.faceColors1[var1], this.faceColors1[var1], field1715[var5], field1715[var6], field1715[var7], field1716[var5], field1716[var6], field1716[var7], field1717[var5], field1717[var6], field1717[var7], this.faceTextures[var1]);
+					Rasterizer3D.Rasterizer3D_textureAffine(modelViewportYs[var2], modelViewportYs[var3], modelViewportYs[var4], modelViewportXs[var2], modelViewportXs[var3], modelViewportXs[var4], this.faceColors1[var1], this.faceColors1[var1], this.faceColors1[var1], field1715[var5], field1715[var6], field1715[var7], field1716[var5], field1716[var6], field1716[var7], field1717[var5], field1717[var6], field1717[var7], this.faceTextures[var1]);
 				} else {
-					Rasterizer3D.method2986(modelViewportYs[var2], modelViewportYs[var3], modelViewportYs[var4], modelViewportXs[var2], modelViewportXs[var3], modelViewportXs[var4], this.faceColors1[var1], this.faceColors2[var1], this.faceColors3[var1], field1715[var5], field1715[var6], field1715[var7], field1716[var5], field1716[var6], field1716[var7], field1717[var5], field1717[var6], field1717[var7], this.faceTextures[var1]);
+					Rasterizer3D.Rasterizer3D_textureAffine(modelViewportYs[var2], modelViewportYs[var3], modelViewportYs[var4], modelViewportXs[var2], modelViewportXs[var3], modelViewportXs[var4], this.faceColors1[var1], this.faceColors2[var1], this.faceColors3[var1], field1715[var5], field1715[var6], field1715[var7], field1716[var5], field1716[var6], field1716[var7], field1717[var5], field1717[var6], field1717[var7], this.faceTextures[var1]);
 				}
 			} else if (this.faceColors3[var1] == -1) {
-				Rasterizer3D.method3007(modelViewportYs[var2], modelViewportYs[var3], modelViewportYs[var4], modelViewportXs[var2], modelViewportXs[var3], modelViewportXs[var4], field1737[this.faceColors1[var1]]);
+				Rasterizer3D.Rasterizer3D_horiz(modelViewportYs[var2], modelViewportYs[var3], modelViewportYs[var4], modelViewportXs[var2], modelViewportXs[var3], modelViewportXs[var4], field1737[this.faceColors1[var1]]);
 			} else {
-				Rasterizer3D.method3020(modelViewportYs[var2], modelViewportYs[var3], modelViewportYs[var4], modelViewportXs[var2], modelViewportXs[var3], modelViewportXs[var4], this.faceColors1[var1], this.faceColors2[var1], this.faceColors3[var1]);
+				Rasterizer3D.Rasterizer3D_vert(modelViewportYs[var2], modelViewportYs[var3], modelViewportYs[var4], modelViewportXs[var2], modelViewportXs[var3], modelViewportXs[var4], this.faceColors1[var1], this.faceColors2[var1], this.faceColors3[var1]);
 			}
 
 		}
@@ -1502,14 +1502,14 @@ public class Model extends Entity {
 		var14 = field1699[0];
 		int var15 = field1699[1];
 		int var16 = field1699[2];
-		Rasterizer3D.field1763 = false;
+		Rasterizer3D.Rasterizer3D_rasterClipEnable = false;
 		int var17;
 		int var18;
 		int var19;
 		int var20;
 		if (var4 == 3) {
 			if (var11 < 0 || var12 < 0 || var13 < 0 || var11 > Rasterizer3D.Rasterizer3D_clipWidth || var12 > Rasterizer3D.Rasterizer3D_clipWidth || var13 > Rasterizer3D.Rasterizer3D_clipWidth) {
-				Rasterizer3D.field1763 = true;
+				Rasterizer3D.Rasterizer3D_rasterClipEnable = true;
 			}
 
 			if (this.faceTextures != null && this.faceTextures[var1] != -1) {
@@ -1525,20 +1525,20 @@ public class Model extends Entity {
 				}
 
 				if (this.faceColors3[var1] == -1) {
-					Rasterizer3D.method2986(var14, var15, var16, var11, var12, var13, this.faceColors1[var1], this.faceColors1[var1], this.faceColors1[var1], field1715[var17], field1715[var18], field1715[var19], field1716[var17], field1716[var18], field1716[var19], field1717[var17], field1717[var18], field1717[var19], this.faceTextures[var1]);
+					Rasterizer3D.Rasterizer3D_textureAffine(var14, var15, var16, var11, var12, var13, this.faceColors1[var1], this.faceColors1[var1], this.faceColors1[var1], field1715[var17], field1715[var18], field1715[var19], field1716[var17], field1716[var18], field1716[var19], field1717[var17], field1717[var18], field1717[var19], this.faceTextures[var1]);
 				} else {
-					Rasterizer3D.method2986(var14, var15, var16, var11, var12, var13, field1728[0], field1728[1], field1728[2], field1715[var17], field1715[var18], field1715[var19], field1716[var17], field1716[var18], field1716[var19], field1717[var17], field1717[var18], field1717[var19], this.faceTextures[var1]);
+					Rasterizer3D.Rasterizer3D_textureAffine(var14, var15, var16, var11, var12, var13, field1728[0], field1728[1], field1728[2], field1715[var17], field1715[var18], field1715[var19], field1716[var17], field1716[var18], field1716[var19], field1717[var17], field1717[var18], field1717[var19], this.faceTextures[var1]);
 				}
 			} else if (this.faceColors3[var1] == -1) {
-				Rasterizer3D.method3007(var14, var15, var16, var11, var12, var13, field1737[this.faceColors1[var1]]);
+				Rasterizer3D.Rasterizer3D_horiz(var14, var15, var16, var11, var12, var13, field1737[this.faceColors1[var1]]);
 			} else {
-				Rasterizer3D.method3020(var14, var15, var16, var11, var12, var13, field1728[0], field1728[1], field1728[2]);
+				Rasterizer3D.Rasterizer3D_vert(var14, var15, var16, var11, var12, var13, field1728[0], field1728[1], field1728[2]);
 			}
 		}
 
 		if (var4 == 4) {
 			if (var11 < 0 || var12 < 0 || var13 < 0 || var11 > Rasterizer3D.Rasterizer3D_clipWidth || var12 > Rasterizer3D.Rasterizer3D_clipWidth || var13 > Rasterizer3D.Rasterizer3D_clipWidth || field1726[3] < 0 || field1726[3] > Rasterizer3D.Rasterizer3D_clipWidth) {
-				Rasterizer3D.field1763 = true;
+				Rasterizer3D.Rasterizer3D_rasterClipEnable = true;
 			}
 
 			if (this.faceTextures != null && this.faceTextures[var1] != -1) {
@@ -1555,19 +1555,19 @@ public class Model extends Entity {
 
 				short var21 = this.faceTextures[var1];
 				if (this.faceColors3[var1] == -1) {
-					Rasterizer3D.method2986(var14, var15, var16, var11, var12, var13, this.faceColors1[var1], this.faceColors1[var1], this.faceColors1[var1], field1715[var17], field1715[var18], field1715[var19], field1716[var17], field1716[var18], field1716[var19], field1717[var17], field1717[var18], field1717[var19], var21);
-					Rasterizer3D.method2986(var14, var16, field1699[3], var11, var13, field1726[3], this.faceColors1[var1], this.faceColors1[var1], this.faceColors1[var1], field1715[var17], field1715[var18], field1715[var19], field1716[var17], field1716[var18], field1716[var19], field1717[var17], field1717[var18], field1717[var19], var21);
+					Rasterizer3D.Rasterizer3D_textureAffine(var14, var15, var16, var11, var12, var13, this.faceColors1[var1], this.faceColors1[var1], this.faceColors1[var1], field1715[var17], field1715[var18], field1715[var19], field1716[var17], field1716[var18], field1716[var19], field1717[var17], field1717[var18], field1717[var19], var21);
+					Rasterizer3D.Rasterizer3D_textureAffine(var14, var16, field1699[3], var11, var13, field1726[3], this.faceColors1[var1], this.faceColors1[var1], this.faceColors1[var1], field1715[var17], field1715[var18], field1715[var19], field1716[var17], field1716[var18], field1716[var19], field1717[var17], field1717[var18], field1717[var19], var21);
 				} else {
-					Rasterizer3D.method2986(var14, var15, var16, var11, var12, var13, field1728[0], field1728[1], field1728[2], field1715[var17], field1715[var18], field1715[var19], field1716[var17], field1716[var18], field1716[var19], field1717[var17], field1717[var18], field1717[var19], var21);
-					Rasterizer3D.method2986(var14, var16, field1699[3], var11, var13, field1726[3], field1728[0], field1728[2], field1728[3], field1715[var17], field1715[var18], field1715[var19], field1716[var17], field1716[var18], field1716[var19], field1717[var17], field1717[var18], field1717[var19], var21);
+					Rasterizer3D.Rasterizer3D_textureAffine(var14, var15, var16, var11, var12, var13, field1728[0], field1728[1], field1728[2], field1715[var17], field1715[var18], field1715[var19], field1716[var17], field1716[var18], field1716[var19], field1717[var17], field1717[var18], field1717[var19], var21);
+					Rasterizer3D.Rasterizer3D_textureAffine(var14, var16, field1699[3], var11, var13, field1726[3], field1728[0], field1728[2], field1728[3], field1715[var17], field1715[var18], field1715[var19], field1716[var17], field1716[var18], field1716[var19], field1717[var17], field1717[var18], field1717[var19], var21);
 				}
 			} else if (this.faceColors3[var1] == -1) {
 				var17 = field1737[this.faceColors1[var1]];
-				Rasterizer3D.method3007(var14, var15, var16, var11, var12, var13, var17);
-				Rasterizer3D.method3007(var14, var16, field1699[3], var11, var13, field1726[3], var17);
+				Rasterizer3D.Rasterizer3D_horiz(var14, var15, var16, var11, var12, var13, var17);
+				Rasterizer3D.Rasterizer3D_horiz(var14, var16, field1699[3], var11, var13, field1726[3], var17);
 			} else {
-				Rasterizer3D.method3020(var14, var15, var16, var11, var12, var13, field1728[0], field1728[1], field1728[2]);
-				Rasterizer3D.method3020(var14, var16, field1699[3], var11, var13, field1726[3], field1728[0], field1728[2], field1728[3]);
+				Rasterizer3D.Rasterizer3D_vert(var14, var15, var16, var11, var12, var13, field1728[0], field1728[1], field1728[2]);
+				Rasterizer3D.Rasterizer3D_vert(var14, var16, field1699[3], var11, var13, field1726[3], field1728[0], field1728[2], field1728[3]);
 			}
 		}
 

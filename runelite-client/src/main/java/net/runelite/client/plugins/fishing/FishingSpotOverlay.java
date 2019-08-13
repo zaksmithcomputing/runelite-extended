@@ -67,7 +67,7 @@ class FishingSpotOverlay extends Overlay
 	private FishingSpotOverlay(final FishingPlugin plugin, final Client client, final ItemManager itemManager)
 	{
 		setPosition(OverlayPosition.DYNAMIC);
-		setLayer(OverlayLayer.ABOVE_SCENE);
+		setLayer(OverlayLayer.BELOW_OBJECTS);
 		this.plugin = plugin;
 		this.client = client;
 		this.itemManager = itemManager;

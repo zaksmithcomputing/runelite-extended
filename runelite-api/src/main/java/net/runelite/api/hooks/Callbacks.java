@@ -62,6 +62,11 @@ public interface Callbacks
 	void updateNpcs();
 
 	/**
+	 * Called before the scene is drawn.
+	 */
+	void beforeDrawScene();
+
+	/**
 	 * Called after the scene is drawn.
 	 */
 	void drawScene();
