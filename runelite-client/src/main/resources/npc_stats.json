@@ -35553,7 +35553,9 @@
   },
   "8094": {
     "name": "Galvek",
+    "hitpoints": 1200,
     "combatLevel": 608,
+    "attackSpeed": 6,
     "attackLevel": 632,
     "strengthLevel": 268,
     "defenceLevel": 188,
@@ -35570,11 +35572,14 @@
     "bonusRangeStrength": 6,
     "bonusMagicDamage": 42,
     "poisonImmune": true,
-    "venomImmune": true
+    "venomImmune": true,
+    "dragon": true
   },
   "8095": {
     "name": "Galvek",
+    "hitpoints": 1200,
     "combatLevel": 608,
+    "attackSpeed": 6,
     "attackLevel": 632,
     "strengthLevel": 268,
     "defenceLevel": 188,
@@ -35591,7 +35596,8 @@
     "bonusRangeStrength": 6,
     "bonusMagicDamage": 42,
     "poisonImmune": true,
-    "venomImmune": true
+    "venomImmune": true,
+    "dragon": true
   },
   "8096": {
     "name": "Galvek",
@@ -35745,7 +35751,9 @@
   },
   "8177": {
     "name": "Galvek",
+    "hitpoints": 1200,
     "combatLevel": 608,
+    "attackSpeed": 6,
     "attackLevel": 632,
     "strengthLevel": 268,
     "defenceLevel": 188,
@@ -35762,7 +35770,8 @@
     "bonusRangeStrength": 6,
     "bonusMagicDamage": 42,
     "poisonImmune": true,
-    "venomImmune": true
+    "venomImmune": true,
+    "dragon": true
   },
   "8178": {
     "name": "Galvek",
