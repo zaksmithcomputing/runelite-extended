@@ -5801,16 +5801,7 @@
     "combatLevel": 66,
     "slayerLevel": 1,
     "attackSpeed": 15,
-    "attackLevel": 90,
-    "strengthLevel": 90,
-    "defenceLevel": 90,
-    "rangeLevel": 1,
-    "magicLevel": 70,
-    "magic": 70,
-    "stabDef": 40,
-    "slashDef": 90,
-    "crushDef": 90,
-    "magicDef": 34
+    "magic": 70
   },
   "800": {
     "name": "Locust rider",
@@ -6955,18 +6946,6 @@
     "attackLevel": 25,
     "strengthLevel": 50,
     "defenceLevel": 25,
-    "rangeLevel": 1,
-    "magicLevel": 1
-  },
-  "1038": {
-    "name": "Monkey",
-    "hitpoints": 6,
-    "combatLevel": 3,
-    "slayerLevel": 1,
-    "attackSpeed": 4,
-    "attackLevel": 2,
-    "strengthLevel": 3,
-    "defenceLevel": 2,
     "rangeLevel": 1,
     "magicLevel": 1
   },
@@ -11692,7 +11671,7 @@
     "hitpoints": 52,
     "combatLevel": 47,
     "slayerLevel": 1,
-    "attackSpeed": 6,
+    "attackSpeed": 4,
     "attackLevel": 39,
     "strengthLevel": 39,
     "defenceLevel": 35,
@@ -13681,7 +13660,9 @@
     "strengthLevel": 1,
     "defenceLevel": 1,
     "rangeLevel": 1,
-    "magicLevel": 1
+    "magicLevel": 1,
+    "poisonImmune": true,
+    "venomImmune": true
   },
   "2791": {
     "name": "Cow",
@@ -13693,7 +13674,9 @@
     "strengthLevel": 1,
     "defenceLevel": 1,
     "rangeLevel": 1,
-    "magicLevel": 1
+    "magicLevel": 1,
+    "poisonImmune": true,
+    "venomImmune": true
   },
   "2792": {
     "name": "Cow calf",
@@ -13717,7 +13700,9 @@
     "strengthLevel": 1,
     "defenceLevel": 1,
     "rangeLevel": 1,
-    "magicLevel": 1
+    "magicLevel": 1,
+    "poisonImmune": true,
+    "venomImmune": true
   },
   "2794": {
     "name": "Cow calf",
@@ -13741,7 +13726,9 @@
     "strengthLevel": 1,
     "defenceLevel": 1,
     "rangeLevel": 1,
-    "magicLevel": 1
+    "magicLevel": 1,
+    "poisonImmune": true,
+    "venomImmune": true
   },
   "2801": {
     "name": "Cow calf",
@@ -14939,7 +14926,7 @@
     "hitpoints": 29,
     "combatLevel": 28,
     "slayerLevel": 1,
-    "attackSpeed": 6,
+    "attackSpeed": 4,
     "attackLevel": 22,
     "strengthLevel": 24,
     "defenceLevel": 24,
@@ -14951,7 +14938,7 @@
     "hitpoints": 49,
     "combatLevel": 42,
     "slayerLevel": 1,
-    "attackSpeed": 6,
+    "attackSpeed": 4,
     "attackLevel": 33,
     "strengthLevel": 31,
     "defenceLevel": 36,
@@ -16406,6 +16393,18 @@
     "bonusAttack": 50,
     "bonusStrength": 50
   },
+  "3200": {
+    "name": "Arhein",
+    "hitpoints": 6,
+    "combatLevel": 3,
+    "slayerLevel": 1,
+    "attackSpeed": 4,
+    "attackLevel": 2,
+    "strengthLevel": 3,
+    "defenceLevel": 2,
+    "rangeLevel": 1,
+    "magicLevel": 1
+  },
   "3233": {
     "name": "Leech",
     "hitpoints": 45,
@@ -16832,7 +16831,7 @@
     "hitpoints": 29,
     "combatLevel": 28,
     "slayerLevel": 1,
-    "attackSpeed": 6,
+    "attackSpeed": 4,
     "attackLevel": 22,
     "strengthLevel": 24,
     "defenceLevel": 24,
@@ -16844,7 +16843,7 @@
     "hitpoints": 29,
     "combatLevel": 28,
     "slayerLevel": 1,
-    "attackSpeed": 6,
+    "attackSpeed": 4,
     "attackLevel": 22,
     "strengthLevel": 24,
     "defenceLevel": 24,
@@ -16856,7 +16855,7 @@
     "hitpoints": 29,
     "combatLevel": 28,
     "slayerLevel": 1,
-    "attackSpeed": 6,
+    "attackSpeed": 4,
     "attackLevel": 22,
     "strengthLevel": 24,
     "defenceLevel": 24,
@@ -16868,7 +16867,7 @@
     "hitpoints": 29,
     "combatLevel": 28,
     "slayerLevel": 1,
-    "attackSpeed": 6,
+    "attackSpeed": 4,
     "attackLevel": 22,
     "strengthLevel": 24,
     "defenceLevel": 24,
@@ -22103,7 +22102,7 @@
     "hitpoints": 29,
     "combatLevel": 28,
     "slayerLevel": 1,
-    "attackSpeed": 6,
+    "attackSpeed": 4,
     "attackLevel": 22,
     "strengthLevel": 24,
     "defenceLevel": 24,
@@ -23875,6 +23874,7 @@
     "name": "Goblin guard",
     "hitpoints": 43,
     "combatLevel": 42,
+    "slayerLevel": 1,
     "attackSpeed": 4,
     "attackLevel": 32,
     "strengthLevel": 37,
@@ -25415,7 +25415,9 @@
     "strengthLevel": 1,
     "defenceLevel": 1,
     "rangeLevel": 1,
-    "magicLevel": 1
+    "magicLevel": 1,
+    "poisonImmune": true,
+    "venomImmune": true
   },
   "5848": {
     "name": "Tanglefoot",
@@ -26373,7 +26375,7 @@
     "name": "Tortoise",
     "hitpoints": 100,
     "combatLevel": 79,
-    "attackSpeed": 6,
+    "attackSpeed": 4,
     "attackLevel": 15,
     "strengthLevel": 90,
     "defenceLevel": 80,
@@ -26384,7 +26386,7 @@
     "name": "Tortoise",
     "hitpoints": 120,
     "combatLevel": 92,
-    "attackSpeed": 6,
+    "attackSpeed": 4,
     "attackLevel": 30,
     "strengthLevel": 100,
     "defenceLevel": 80,
@@ -27375,7 +27377,12 @@
     "hitpoints": 8,
     "combatLevel": 170,
     "slayerLevel": 1,
-    "attackSpeed": 4
+    "attackSpeed": 4,
+    "attackLevel": 200,
+    "strengthLevel": 200,
+    "defenceLevel": 1,
+    "rangeLevel": 1,
+    "magicLevel": 1
   },
   "6342": {
     "name": "Barrelchest",
@@ -28236,7 +28243,9 @@
     "strengthLevel": 1,
     "defenceLevel": 1,
     "rangeLevel": 1,
-    "magicLevel": 1
+    "magicLevel": 1,
+    "poisonImmune": true,
+    "venomImmune": true
   },
   "6402": {
     "name": "Mosquito swarm",
@@ -28436,7 +28445,7 @@
     "hitpoints": 70,
     "combatLevel": 80,
     "slayerLevel": 1,
-    "attackSpeed": 6,
+    "attackSpeed": 4,
     "attackLevel": 70,
     "strengthLevel": 70,
     "defenceLevel": 70,
@@ -35546,6 +35555,7 @@
     "name": "Galvek",
     "hitpoints": 1200,
     "combatLevel": 608,
+    "attackSpeed": 6,
     "attackLevel": 632,
     "strengthLevel": 268,
     "defenceLevel": 188,
@@ -35562,12 +35572,14 @@
     "bonusRangeStrength": 6,
     "bonusMagicDamage": 42,
     "poisonImmune": true,
-    "venomImmune": true
+    "venomImmune": true,
+    "dragon": true
   },
   "8095": {
     "name": "Galvek",
     "hitpoints": 1200,
     "combatLevel": 608,
+    "attackSpeed": 6,
     "attackLevel": 632,
     "strengthLevel": 268,
     "defenceLevel": 188,
@@ -35584,7 +35596,8 @@
     "bonusRangeStrength": 6,
     "bonusMagicDamage": 42,
     "poisonImmune": true,
-    "venomImmune": true
+    "venomImmune": true,
+    "dragon": true
   },
   "8096": {
     "name": "Galvek",
@@ -35740,6 +35753,7 @@
     "name": "Galvek",
     "hitpoints": 1200,
     "combatLevel": 608,
+    "attackSpeed": 6,
     "attackLevel": 632,
     "strengthLevel": 268,
     "defenceLevel": 188,
@@ -35756,7 +35770,8 @@
     "bonusRangeStrength": 6,
     "bonusMagicDamage": 42,
     "poisonImmune": true,
-    "venomImmune": true
+    "venomImmune": true,
+    "dragon": true
   },
   "8178": {
     "name": "Galvek",
@@ -37641,6 +37656,39 @@
     "bonusAttack": 66,
     "bonusStrength": 62
   },
+  "8759": {
+    "name": "Iorwerth Warrior",
+    "hitpoints": 105,
+    "combatLevel": 108,
+    "slayerLevel": 1,
+    "attackSpeed": 4,
+    "attackLevel": 95,
+    "strengthLevel": 95,
+    "defenceLevel": 80,
+    "magicLevel": 1,
+    "stabDef": 50,
+    "slashDef": 70,
+    "crushDef": 70,
+    "rangeDef": 50,
+    "magicDef": 60
+  },
+  "8760": {
+    "name": "Iorwerth Archer",
+    "hitpoints": 105,
+    "combatLevel": 90,
+    "slayerLevel": 1,
+    "attackSpeed": 5,
+    "attackLevel": 10,
+    "strengthLevel": 10,
+    "defenceLevel": 80,
+    "rangeLevel": 90,
+    "magicLevel": 1,
+    "stabDef": 50,
+    "slashDef": 70,
+    "crushDef": 70,
+    "rangeDef": 50,
+    "magicDef": 60
+  },
   "8847": {
     "name": "Essyllt",
     "hitpoints": 320,
@@ -37872,21 +37920,25 @@
   },
   "9035": {
     "name": "Corrupted Hunllef",
+    "hitpoints": 1000,
     "combatLevel": 894,
     "attackSpeed": 5
   },
   "9036": {
     "name": "Corrupted Hunllef",
+    "hitpoints": 1000,
     "combatLevel": 894,
     "attackSpeed": 5
   },
   "9037": {
     "name": "Corrupted Hunllef",
+    "hitpoints": 1000,
     "combatLevel": 894,
     "attackSpeed": 5
   },
   "9038": {
     "name": "Corrupted Hunllef",
+    "hitpoints": 1000,
     "combatLevel": 894,
     "attackSpeed": 5
   },
