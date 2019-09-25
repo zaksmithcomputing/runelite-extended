@@ -8,6 +8,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Make gradlew executable
+      run: chmod +x gradlew
     - uses: actions/checkout@master
     - name: Update Gradle Wrapper
       run: ./gradlew wrapper --gradle-version $(curl -s https://api.github.com/repos/gradle/gradle/releases/latest | grep -Po '"name":.*?[^\\]",' | sed -r 's/[\"name:, ]+//g') --distribution-type all
