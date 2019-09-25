@@ -16,4 +16,4 @@ jobs:
       - name: Assembling
         run: gradlew assemble --console=plain
       - name: Testing
-        run: gradlew test --stacktrace --console=plain
+        run: gradlew test -PmaxParallelForks=25 --stacktrace --console=plain
