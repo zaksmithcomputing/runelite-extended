@@ -1,6 +1,6 @@
 name: RunelitePlus - Gradle Wrapper
 
-on: pull_request
+on: push
 
 jobs:
   update:
