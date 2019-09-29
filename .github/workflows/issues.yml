@@ -1,0 +1,16 @@
+name: OpenOSRS - Issues
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  assignAuthor:
+    name: Assign author to issue
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assign author to issue
+        if: github.event.action == 'opened'
+        uses: technote-space/assign-author@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
