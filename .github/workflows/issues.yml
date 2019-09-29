@@ -6,7 +6,7 @@ on:
 
 jobs:
   assignAuthor:
-    name: Assign author to issue
+    name: Assign author
     runs-on: ubuntu-latest
 
     steps:
