@@ -1,16 +1,16 @@
-name: OpenOSRS - Issues
+name: OpenOSRS - Pull Request
 
 on:
-  issues:
+  pull_request:
     types: [opened]
 
 jobs:
   assignAuthor:
-    name: Assign author to issue
+    name: Assign author to PR
     runs-on: ubuntu-latest
 
     steps:
-      - name: Assign author to issue
+      - name: Assign author to PR
         if: github.event.action == 'opened'
         uses: technote-space/assign-author@master
         with:
