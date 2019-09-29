@@ -60,4 +60,4 @@ jobs:
         if: github.event_name == 'pull_request' && github.actor == 'github-actions[bot]'
         uses: hmarr/auto-approve-action@master
         with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          github-token: ${{ secrets.OpenOSRS }}

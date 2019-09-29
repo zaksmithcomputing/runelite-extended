@@ -10,9 +10,9 @@ jobs:
     steps:
       - name: Assign author to PR
         if: github.event.action == 'opened'
-        uses: technote-space/assign-author@master
+        uses: technote-space/assign-author@v1
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.OpenOSRS }}
 
   pr-lint:
     name: Title linter
@@ -33,4 +33,4 @@ jobs:
         continue-on-error: true
         uses: actions/labeler@v2
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          repo-token: "${{ secrets.OpenOSRS }}"
