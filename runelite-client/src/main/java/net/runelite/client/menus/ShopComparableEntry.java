@@ -1,9 +1,8 @@
-package net.runelite.client.plugins.menuentryswapper.comparables;
+package net.runelite.client.menus;
 
 import java.util.List;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.util.Text;
-import net.runelite.client.menus.AbstractComparableEntry;
 
 public class ShopComparableEntry extends AbstractComparableEntry
 {

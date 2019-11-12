@@ -1,11 +1,10 @@
-package net.runelite.client.plugins.menuentryswapper.comparables;
+package net.runelite.client.menus;
 
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.util.Text;
-import net.runelite.client.menus.AbstractComparableEntry;
 
 @EqualsAndHashCode(callSuper = true)
 public class WithdrawComparableEntry extends AbstractComparableEntry

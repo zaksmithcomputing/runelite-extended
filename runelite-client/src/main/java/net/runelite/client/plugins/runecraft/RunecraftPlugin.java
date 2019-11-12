@@ -57,13 +57,13 @@ import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
+import net.runelite.client.menus.BankComparableEntry;
 import net.runelite.client.menus.BaseComparableEntry;
 import static net.runelite.client.menus.ComparableEntries.newBaseComparableEntry;
+import net.runelite.client.menus.EquipmentComparableEntry;
 import net.runelite.client.menus.MenuManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
-import net.runelite.client.plugins.menuentryswapper.comparables.BankComparableEntry;
-import net.runelite.client.plugins.menuentryswapper.comparables.EquipmentComparableEntry;
 import static net.runelite.client.plugins.runecraft.AbyssRifts.*;
 import net.runelite.client.ui.overlay.OverlayManager;
 

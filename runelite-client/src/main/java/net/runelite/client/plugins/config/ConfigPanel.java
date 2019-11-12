@@ -121,6 +121,7 @@ import net.runelite.client.ui.components.colorpicker.RuneliteColorPicker;
 import net.runelite.client.util.ColorUtil;
 import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.MiscUtils;
+import static net.runelite.client.util.SwingUtil.syncExec;
 import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
@@ -306,17 +307,7 @@ public class ConfigPanel extends PluginPanel
 		pluginManager.getPlugins().stream()
 			.filter(plugin -> !plugin.getClass().getAnnotation(PluginDescriptor.class).hidden())
 			.forEach(plugin ->
-				{
-					final PluginDescriptor descriptor = plugin.getClass().getAnnotation(PluginDescriptor.class);
-					final Config config = pluginManager.getPluginConfigProxy(plugin);
-					final ConfigDescriptor configDescriptor = config == null ? null : configManager.getConfigDescriptor(config);
-
-					final PluginListItem listItem = new PluginListItem(this, configManager, plugin, descriptor, config, configDescriptor);
-					listItem.setPinned(pinnedPlugins.contains(listItem.getName()));
-					listItem.setColor(getColorByCategory(OpenOSRSConfig, listItem.getPluginType()));
-					listItem.setHidden(getHiddenByCategory(OpenOSRSConfig, listItem.getPluginType()));
-					plugins.add(listItem);
-				}
+				plugins.add(createPluginListItem(plugin, pinnedPlugins))
 			);
 
 		final PluginListItem chatColor = new PluginListItem(this, configManager, chatColorConfig,
@@ -328,6 +319,40 @@ public class ConfigPanel extends PluginPanel
 		pluginList.addAll(plugins);
 
 		ConfigPanel.sortPluginList(OpenOSRSConfig, null);
+	}
+
+	PluginListItem createPluginListItem(Plugin plugin, List<String> pinnedPlugins)
+	{
+		final PluginDescriptor descriptor = plugin.getClass().getAnnotation(PluginDescriptor.class);
+		final Config config = pluginManager.getPluginConfigProxy(plugin);
+		final ConfigDescriptor configDescriptor = config == null ? null : configManager.getConfigDescriptor(config);
+
+		final PluginListItem listItem = new PluginListItem(this, configManager, plugin, descriptor, config, configDescriptor);
+		listItem.setPinned(pinnedPlugins.contains(listItem.getName()));
+		listItem.setColor(getColorByCategory(OpenOSRSConfig, listItem.getPluginType()));
+		listItem.setHidden(getHiddenByCategory(OpenOSRSConfig, listItem.getPluginType()));
+
+		return listItem;
+	}
+
+	void removePlugin(Plugin plugin)
+	{
+		pluginList.removeIf(pluginListItem -> pluginListItem.getPlugin() == plugin);
+	}
+
+	void addPlugin(Plugin plugin)
+	{
+		try
+		{
+			syncExec(() -> {
+				pluginList.add(createPluginListItem(plugin, getPinnedPluginNames()));
+				ConfigPanel.sortPluginList(OpenOSRSConfig, null);
+			});
+		}
+		catch (InvocationTargetException | InterruptedException e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 	void refreshPluginList()

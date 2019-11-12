@@ -64,7 +64,7 @@ public interface OpenOSRSConfig extends Config
 	@ConfigItem(
 		position = 3,
 		keyName = "shareLogs",
-		name = "Anonymous error data",
+		name = "Share anonymous error data",
 		description = "Share anonymous error data with the OpenOSRS developers",
 		titleSection = "logTitle"
 	)
@@ -276,34 +276,10 @@ public interface OpenOSRSConfig extends Config
 	}
 
 	@ConfigTitleSection(
-		keyName = "externalPluginsTitle",
-		name = "External",
-		description = "",
-		position = 17,
-		titleSection = "pluginsTitle"
-	)
-	default Title externalPluginsTitle()
-	{
-		return new Title();
-	}
-
-	@ConfigItem(
-		keyName = "enablePlugins",
-		name = "Enable loading of external plugins",
-		description = "Enable loading of external plugins",
-		position = 18,
-		titleSection = "externalPluginsTitle"
-	)
-	default boolean enablePlugins()
-	{
-		return false;
-	}
-
-	@ConfigTitleSection(
 		keyName = "opacityTitle",
 		name = "Opacity",
 		description = "",
-		position = 19
+		position = 17
 	)
 	default Title opacityTitle()
 	{
@@ -314,7 +290,7 @@ public interface OpenOSRSConfig extends Config
 		keyName = "enableOpacity",
 		name = "Enable opacity",
 		description = "Enables opacity for the whole window.<br>NOTE: This only stays enabled if your pc supports this!",
-		position = 20,
+		position = 18,
 		titleSection = "opacityTitle"
 	)
 	default boolean enableOpacity()
@@ -330,7 +306,7 @@ public interface OpenOSRSConfig extends Config
 		keyName = "opacityPercentage",
 		name = "Opacity percentage",
 		description = "Changes the opacity of the window if opacity is enabled",
-		position = 21,
+		position = 19,
 		titleSection = "opacityTitle"
 	)
 	default int opacityPercentage()
@@ -342,7 +318,7 @@ public interface OpenOSRSConfig extends Config
 		keyName = "miscTitle",
 		name = "Miscellaneous",
 		description = "",
-		position = 22
+		position = 20
 	)
 	default Title miscTitle()
 	{
@@ -353,7 +329,7 @@ public interface OpenOSRSConfig extends Config
 		keyName = "keyboardPin",
 		name = "Keyboard bank pin",
 		description = "Enables you to type your bank pin",
-		position = 23,
+		position = 21,
 		titleSection = "miscTitle"
 	)
 	default boolean keyboardPin()
@@ -365,11 +341,30 @@ public interface OpenOSRSConfig extends Config
 		keyName = "detachHotkey",
 		name = "Detach Cam",
 		description = "Detach Camera hotkey, press this and it will activate detatched camera.",
-		position = 24,
+		position = 22,
 		titleSection = "miscTitle"
 	)
 	default Keybind detachHotkey()
 	{
 		return Keybind.NOT_SET;
 	}
+
+	@ConfigItem(
+		keyName = "externalRepositories",
+		name = "",
+		description = "",
+		hidden = true
+	)
+	default String getExternalRepositories()
+	{
+		return "OpenOSRS:https://raw.githubusercontent.com/open-osrs/plugins/master/";
+	}
+
+	@ConfigItem(
+		keyName = "externalRepositories",
+		name = "",
+		description = "",
+		hidden = true
+	)
+	void setExternalRepositories(String val);
 }

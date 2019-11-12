@@ -60,7 +60,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
-import javax.swing.SwingUtilities;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.RuneLite;
@@ -77,6 +76,7 @@ import net.runelite.client.task.ScheduledMethod;
 import net.runelite.client.task.Scheduler;
 import net.runelite.client.ui.RuneLiteSplashScreen;
 import net.runelite.client.util.GameEventManager;
+import static net.runelite.client.util.SwingUtil.syncExec;
 
 @Singleton
 @Slf4j
@@ -97,9 +97,6 @@ public class PluginManager
 	private final List<Plugin> activePlugins = new CopyOnWriteArrayList<>();
 	private final String runeliteGroupName = RuneLiteConfig.class
 		.getAnnotation(ConfigGroup.class).value();
-
-	@Inject
-	ExternalPluginLoader externalPluginLoader;
 
 	@Setter
 	boolean isOutdated;
@@ -205,11 +202,6 @@ public class PluginManager
 		}
 	}
 
-	public void loadExternalPlugins()
-	{
-		externalPluginLoader.scanAndLoad();
-	}
-
 	public void loadCorePlugins() throws IOException
 	{
 		plugins.addAll(scanAndInstantiate(getClass().getClassLoader(), PLUGIN_PACKAGE));
@@ -234,14 +226,14 @@ public class PluginManager
 
 			loaded++;
 
-			RuneLiteSplashScreen.stage(.80, 1, "Starting plugins", loaded, scannedPlugins.size());
+			RuneLiteSplashScreen.stage(.80, .90, "Starting plugins", loaded, scannedPlugins.size());
 		}
 	}
 
 	@SuppressWarnings("unchecked")
 	List<Plugin> scanAndInstantiate(ClassLoader classLoader, String packageName) throws IOException
 	{
-		RuneLiteSplashScreen.stage(.59, "Loading plugins");
+		RuneLiteSplashScreen.stage(.61, "Loading plugins");
 		MutableGraph<Class<? extends Plugin>> graph = GraphBuilder
 			.directed()
 			.build();
@@ -332,7 +324,7 @@ public class PluginManager
 
 					loaded.getAndIncrement();
 
-					RuneLiteSplashScreen.stage(.60, .70, "Loading plugins", loaded.get(), scannedPlugins.size());
+					RuneLiteSplashScreen.stage(.65, .75, "Loading plugins", loaded.get(), scannedPlugins.size());
 				})));
 			curGroup.forEach(future ->
 			{
@@ -364,7 +356,7 @@ public class PluginManager
 		try
 		{
 			// plugins always start in the event thread
-			SwingUtilities.invokeAndWait(() ->
+			syncExec(() ->
 			{
 				try
 				{
@@ -401,7 +393,7 @@ public class PluginManager
 
 	public synchronized boolean stopPlugin(Plugin plugin) throws PluginInstantiationException
 	{
-		if (!activePlugins.contains(plugin) || isPluginEnabled(plugin))
+		if (!activePlugins.contains(plugin))
 		{
 			return false;
 		}
@@ -413,7 +405,7 @@ public class PluginManager
 			unschedule(plugin);
 
 			// plugins always stop in the event thread
-			SwingUtilities.invokeAndWait(() ->
+			syncExec(() ->
 			{
 				try
 				{
