@@ -34,7 +34,6 @@ import io.reactivex.schedulers.Schedulers;
 import java.awt.image.BufferedImage;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -52,11 +51,16 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.ChatPlayer;
 import net.runelite.api.ClanMember;
+import net.runelite.api.ClanMemberManager;
 import net.runelite.api.Client;
 import net.runelite.api.Friend;
 import net.runelite.api.GameState;
 import net.runelite.api.MenuEntry;
+<<<<<<< HEAD
 import net.runelite.api.MenuOpcode;
+=======
+import net.runelite.api.NameableContainer;
+>>>>>>> runelite/master
 import net.runelite.api.Varbits;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameStateChanged;
@@ -75,6 +79,11 @@ import net.runelite.client.config.ConfigManager;
 import net.runelite.client.config.Keybind;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
+<<<<<<< HEAD
+=======
+import net.runelite.client.events.WorldsFetch;
+import net.runelite.client.game.WorldService;
+>>>>>>> runelite/master
 import net.runelite.client.input.KeyManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
@@ -87,7 +96,6 @@ import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.WorldUtil;
 import net.runelite.client.util.ping.Ping;
 import net.runelite.http.api.worlds.World;
-import net.runelite.http.api.worlds.WorldClient;
 import net.runelite.http.api.worlds.WorldResult;
 import net.runelite.http.api.worlds.WorldType;
 import org.apache.commons.lang3.ArrayUtils;
@@ -100,7 +108,6 @@ import org.apache.commons.lang3.ArrayUtils;
 @Singleton
 public class WorldHopperPlugin extends Plugin
 {
-	private static final int WORLD_FETCH_TIMER = 10;
 	private static final int REFRESH_THROTTLE = 60_000; // ms
 	private static final int TICK_THROTTLE = (int) Duration.ofMinutes(10).toMillis();
 
@@ -127,9 +134,6 @@ public class WorldHopperPlugin extends Plugin
 	private ChatMessageManager chatMessageManager;
 
 	@Inject
-	private ScheduledExecutorService executorService;
-
-	@Inject
 	private WorldHopperConfig config;
 
 	@Inject
@@ -139,7 +143,7 @@ public class WorldHopperPlugin extends Plugin
 	private WorldHopperPingOverlay worldHopperOverlay;
 
 	@Inject
-	private WorldClient worldClient;
+	private WorldService worldService;
 
 	private ScheduledExecutorService hopperExecutorService;
 
@@ -154,11 +158,9 @@ public class WorldHopperPlugin extends Plugin
 
 	private int favoriteWorld1, favoriteWorld2;
 
-	private ScheduledFuture<?> worldResultFuture, pingFuture, currPingFuture;
-	private WorldResult worldResult;
+	private ScheduledFuture<?> pingFuture, currPingFuture;
 	private int currentWorld;
 	private Instant lastFetch;
-	private boolean firstRun;
 
 	private Keybind previousKey;
 	private Keybind nextKey;
@@ -201,9 +203,12 @@ public class WorldHopperPlugin extends Plugin
 	@Override
 	protected void startUp()
 	{
+<<<<<<< HEAD
 		updateConfig();
 
 		firstRun = true;
+=======
+>>>>>>> runelite/master
 		currentPing = -1;
 
 		keyManager.registerKeyListener(previousKeyListener);
@@ -231,12 +236,15 @@ public class WorldHopperPlugin extends Plugin
 
 		// The plugin has its own executor for pings, as it blocks for a long time
 		hopperExecutorService = new ExecutorServiceExceptionLogger(Executors.newSingleThreadScheduledExecutor());
-		// On first run this schedules an initial ping on hopperExecutorService
-		worldResultFuture = executorService.scheduleAtFixedRate(this::tick, 0, WORLD_FETCH_TIMER, TimeUnit.MINUTES);
+		// Run the first-run ping
+		hopperExecutorService.execute(this::pingInitialWorlds);
 
 		// Give some initial delay - this won't run until after pingInitialWorlds finishes from tick() anyway
 		pingFuture = hopperExecutorService.scheduleWithFixedDelay(this::pingNextWorld, 15, 3, TimeUnit.SECONDS);
 		currPingFuture = hopperExecutorService.scheduleWithFixedDelay(this::pingCurrentWorld, 15, 1, TimeUnit.SECONDS);
+
+		// populate initial world list
+		updateList();
 	}
 
 	@Override
@@ -252,11 +260,6 @@ public class WorldHopperPlugin extends Plugin
 
 		keyManager.unregisterKeyListener(previousKeyListener);
 		keyManager.unregisterKeyListener(nextKeyListener);
-
-		worldResultFuture.cancel(true);
-		worldResultFuture = null;
-		worldResult = null;
-		lastFetch = null;
 
 		clientToolbar.removeNavigation(navButton);
 
@@ -393,6 +396,7 @@ public class WorldHopperPlugin extends Plugin
 
 			// Don't add entry if user is offline
 			ChatPlayer player = getChatPlayerFromName(event.getTarget());
+			WorldResult worldResult = worldService.getWorlds();
 
 			if (player == null || player.getWorld() == 0 || player.getWorld() == client.getWorld()
 				|| worldResult == null)
@@ -484,26 +488,6 @@ public class WorldHopperPlugin extends Plugin
 		this.lastFetch = Instant.now(); // This counts as a fetch as it updates populations
 	}
 
-	private void tick()
-	{
-		Instant now = Instant.now();
-		if (lastFetch != null && now.toEpochMilli() - lastFetch.toEpochMilli() < TICK_THROTTLE)
-		{
-			log.debug("Throttling world refresh tick");
-			return;
-		}
-
-		fetchWorlds();
-
-		// Ping worlds once at startup
-		if (firstRun)
-		{
-			firstRun = false;
-			// On first run we ping all of the worlds at once to initialize the ping values
-			hopperExecutorService.execute(this::pingInitialWorlds);
-		}
-	}
-
 	void refresh()
 	{
 		Instant now = Instant.now();
@@ -513,11 +497,14 @@ public class WorldHopperPlugin extends Plugin
 			return;
 		}
 
-		fetchWorlds();
+		lastFetch = now;
+		worldService.refresh();
 	}
 
-	private void fetchWorlds()
+	@Subscribe
+	public void onWorldsFetch(WorldsFetch worldsFetch)
 	{
+<<<<<<< HEAD
 		log.debug("Fetching worlds");
 
 		worldClient.lookupWorlds()
@@ -536,6 +523,9 @@ public class WorldHopperPlugin extends Plugin
 				},
 				(ex) -> log.warn("Error looking up worlds", ex)
 			);
+=======
+		updateList();
+>>>>>>> runelite/master
 	}
 
 	/**
@@ -543,11 +533,16 @@ public class WorldHopperPlugin extends Plugin
 	 */
 	private void updateList()
 	{
-		SwingUtilities.invokeLater(() -> panel.populate(worldResult.getWorlds()));
+		WorldResult worldResult = worldService.getWorlds();
+		if (worldResult != null)
+		{
+			SwingUtilities.invokeLater(() -> panel.populate(worldResult.getWorlds()));
+		}
 	}
 
 	private void hop(boolean previous)
 	{
+		WorldResult worldResult = worldService.getWorlds();
 		if (worldResult == null || client.getGameState() != GameState.LOGGED_IN)
 		{
 			return;
@@ -658,6 +653,7 @@ public class WorldHopperPlugin extends Plugin
 
 	private void hop(int worldId)
 	{
+		WorldResult worldResult = worldService.getWorlds();
 		// Don't try to hop if the world doesn't exist
 		World world = worldResult.findWorld(worldId);
 		if (world == null)
@@ -767,30 +763,20 @@ public class WorldHopperPlugin extends Plugin
 
 		// Search clan members first, because if a friend is in the clan chat but their private
 		// chat is 'off', then the hop-to option will not get shown in the menu (issue #5679).
-		ClanMember[] clanMembers = client.getClanMembers();
-
-		if (clanMembers != null)
+		ClanMemberManager clanMemberManager = client.getClanMemberManager();
+		if (clanMemberManager != null)
 		{
-			for (ClanMember clanMember : clanMembers)
+			ClanMember clanMember = clanMemberManager.findByName(cleanName);
+			if (clanMember != null)
 			{
-				if (clanMember != null && clanMember.getUsername().equals(cleanName))
-				{
-					return clanMember;
-				}
+				return clanMember;
 			}
 		}
 
-		Friend[] friends = client.getFriends();
-
-		if (friends != null)
+		NameableContainer<Friend> friendContainer = client.getFriendContainer();
+		if (friendContainer != null)
 		{
-			for (Friend friend : friends)
-			{
-				if (friend != null && friend.getName().equals(cleanName))
-				{
-					return friend;
-				}
-			}
+			return friendContainer.findByName(cleanName);
 		}
 
 		return null;
@@ -801,7 +787,12 @@ public class WorldHopperPlugin extends Plugin
 	 */
 	private void pingInitialWorlds()
 	{
+<<<<<<< HEAD
 		if (worldResult == null || !this.showSidebar || !this.ping)
+=======
+		WorldResult worldResult = worldService.getWorlds();
+		if (worldResult == null || !config.showSidebar() || !config.ping())
+>>>>>>> runelite/master
 		{
 			return;
 		}
@@ -838,7 +829,12 @@ public class WorldHopperPlugin extends Plugin
 	 */
 	private void pingNextWorld()
 	{
+<<<<<<< HEAD
 		if (worldResult == null || !this.showSidebar || !this.ping)
+=======
+		WorldResult worldResult = worldService.getWorlds();
+		if (worldResult == null || !config.showSidebar() || !config.ping())
+>>>>>>> runelite/master
 		{
 			return;
 		}
@@ -874,6 +870,7 @@ public class WorldHopperPlugin extends Plugin
 	 */
 	private void pingCurrentWorld()
 	{
+		WorldResult worldResult = worldService.getWorlds();
 		// There is no reason to ping the current world if not logged in, as the overlay doesn't draw
 		if (worldResult == null || !this.displayPing || client.getGameState() != GameState.LOGGED_IN)
 		{

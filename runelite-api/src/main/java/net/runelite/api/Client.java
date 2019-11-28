@@ -1133,6 +1133,7 @@ public interface Client extends GameShell
 	boolean isFriended(String name, boolean mustBeLoggedIn);
 
 	/**
+<<<<<<< HEAD
 	 * Gets the number of players in the clan chat.
 	 *
 	 * @return the number of clan chat members
@@ -1165,26 +1166,36 @@ public interface Client extends GameShell
 
 	/**
 	 * Gets the number of friends on the friends list.
-	 */
-	int getFriendsCount();
-
-	/**
-	 * Gets an array of players on the ignore list.
-	 */
-	Ignore[] getIgnores();
-
-	/**
-	 * Gets the number of ignored players on the ignore list.
-	 */
-	int getIgnoreCount();
-
-	/**
-	 * Checks whether a player is in the same clan chat.
+=======
+	 * Retrieve the clan member manager
 	 *
-	 * @param name the name of the player
-	 * @return true if the player is in clan chat
+	 * @return
+>>>>>>> runelite/master
 	 */
-	boolean isClanMember(String name);
+	@Nullable
+	ClanMemberManager getClanMemberManager();
+
+	/**
+<<<<<<< HEAD
+	 * Gets an array of players on the ignore list.
+=======
+	 * Retrieve the nameable container containing friends
+	 *
+	 * @return
+>>>>>>> runelite/master
+	 */
+	NameableContainer<Friend> getFriendContainer();
+
+	/**
+<<<<<<< HEAD
+	 * Gets the number of ignored players on the ignore list.
+=======
+	 * Retrieve the nameable container containing ignores
+	 *
+	 * @return
+>>>>>>> runelite/master
+	 */
+	NameableContainer<Ignore> getIgnoreContainer();
 
 	/**
 	 * Gets the clients saved preferences.
@@ -1560,6 +1571,13 @@ public interface Client extends GameShell
 	 * @param state new NPC 2D hidden state
 	 */
 	void setNPCsHidden2D(boolean state);
+
+	/**
+	 * Sets whether Pets from other players are hidden.
+	 *
+	 * @param state new pet hidden state
+	 */
+	void setPetsHidden(boolean state);
 
 	/**
 	 * Sets whether attacking players or NPCs are hidden.

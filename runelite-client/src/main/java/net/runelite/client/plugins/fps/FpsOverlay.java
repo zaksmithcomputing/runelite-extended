@@ -79,8 +79,13 @@ public class FpsOverlay extends Overlay
 
 	private boolean isEnforced()
 	{
+<<<<<<< HEAD
 		return FpsLimitMode.ALWAYS == plugin.getLimitMode()
 			|| (FpsLimitMode.UNFOCUSED == plugin.getLimitMode() && !isFocused);
+=======
+		return config.limitFps()
+			|| (config.limitFpsUnfocused() && !isFocused);
+>>>>>>> runelite/master
 	}
 
 	private Color getFpsValueColor()

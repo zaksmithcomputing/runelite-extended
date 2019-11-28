@@ -35,7 +35,20 @@ import java.net.URLClassLoader;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.RuneLite;
+<<<<<<< HEAD
 import net.runelite.client.ui.RuneLiteSplashScreen;
+=======
+import net.runelite.client.RuneLiteProperties;
+import static net.runelite.client.rs.ClientUpdateCheckMode.AUTO;
+import static net.runelite.client.rs.ClientUpdateCheckMode.NONE;
+import static net.runelite.client.rs.ClientUpdateCheckMode.VANILLA;
+import net.runelite.client.ui.FatalErrorDialog;
+import net.runelite.client.ui.SplashScreen;
+import net.runelite.http.api.RuneLiteAPI;
+import okhttp3.HttpUrl;
+import okhttp3.Request;
+import okhttp3.Response;
+>>>>>>> runelite/master
 
 @Slf4j
 public class ClientLoader implements Supplier<Applet>
@@ -92,6 +105,7 @@ public class ClientLoader implements Supplier<Applet>
 			log.error("Error loading RS!", e);
 			return null;
 		}
+<<<<<<< HEAD
 		catch (ClassNotFoundException e)
 		{
 			RuneLiteSplashScreen.setError("Unable to load client", "Class not found. This means you"
@@ -100,6 +114,60 @@ public class ClientLoader implements Supplier<Applet>
 
 			log.error("Error loading RS!", e);
 			return null;
+=======
+	}
+
+	private void downloadConfig() throws IOException
+	{
+		HttpUrl url = HttpUrl.parse(RuneLiteProperties.getJavConfig());
+		IOException err = null;
+		for (int attempt = 0; attempt < NUM_ATTEMPTS; attempt++)
+		{
+			try
+			{
+				config = ClientConfigLoader.fetch(url);
+
+				if (Strings.isNullOrEmpty(config.getCodeBase()) || Strings.isNullOrEmpty(config.getInitialJar()) || Strings.isNullOrEmpty(config.getInitialClass()))
+				{
+					throw new IOException("Invalid or missing jav_config");
+				}
+
+				return;
+			}
+			catch (IOException e)
+			{
+				log.info("Failed to get jav_config from host \"{}\" ({})", url.host(), e.getMessage());
+				String host = hostSupplier.get();
+				url = url.newBuilder().host(host).build();
+				err = e;
+			}
+		}
+
+		log.info("Falling back to backup client config");
+
+		try
+		{
+			RSConfig backupConfig = ClientConfigLoader.fetch(HttpUrl.parse(RuneLiteProperties.getJavConfigBackup()));
+
+			if (Strings.isNullOrEmpty(backupConfig.getCodeBase()) || Strings.isNullOrEmpty(backupConfig.getInitialJar()) || Strings.isNullOrEmpty(backupConfig.getInitialClass()))
+			{
+				throw new IOException("Invalid or missing jav_config");
+			}
+
+			if (Strings.isNullOrEmpty(backupConfig.getRuneLiteGamepack()))
+			{
+				throw new IOException("Backup config does not have RuneLite gamepack url");
+			}
+
+			// Randomize the codebase
+			String codebase = hostSupplier.get();
+			backupConfig.setCodebase("http://" + codebase + "/");
+			config = backupConfig;
+		}
+		catch (IOException ex)
+		{
+			throw err; // use error from Jagex's servers
+>>>>>>> runelite/master
 		}
 	}
 
@@ -122,7 +190,117 @@ public class ClientLoader implements Supplier<Applet>
 				byte[] data;
 				try
 				{
+<<<<<<< HEAD
 					data = ByteStreams.toByteArray(inputStream);
+=======
+					vanillaCacheIsInvalid = true;
+				}
+			}
+			catch (Exception e)
+			{
+				log.info("Failed to read the vanilla cache: {}", e.toString());
+				vanillaCacheIsInvalid = true;
+			}
+			vanilla.position(0);
+
+			// Start downloading the vanilla client
+			HttpUrl url;
+			if (config.getRuneLiteGamepack() != null)
+			{
+				// If we are using the backup config, use our own gamepack and ignore the codebase
+				url = HttpUrl.parse(config.getRuneLiteGamepack());
+			}
+			else
+			{
+				String codebase = config.getCodeBase();
+				String initialJar = config.getInitialJar();
+				url = HttpUrl.parse(codebase + initialJar);
+			}
+
+			for (int attempt = 0; ; attempt++)
+			{
+				Request request = new Request.Builder()
+					.url(url)
+					.build();
+
+				try (Response response = RuneLiteAPI.CLIENT.newCall(request).execute())
+				{
+					// Its important to not close the response manually - this should be the only close or
+					// try-with-resources on this stream or it's children
+
+					int length = (int) response.body().contentLength();
+					if (length < 0)
+					{
+						length = 3 * 1024 * 1024;
+					}
+					else
+					{
+						if (!vanillaCacheIsInvalid && vanilla.size() != length)
+						{
+							// The zip trailer filetab can be missing and the ZipInputStream will not notice
+							log.info("Vanilla cache is the wrong size");
+							vanillaCacheIsInvalid = true;
+						}
+					}
+					final int flength = length;
+					TeeInputStream copyStream = new TeeInputStream(new CountingInputStream(response.body().byteStream(),
+						read -> SplashScreen.stage(.05, .35, null, "Downloading Old School RuneScape", read, flength, true)));
+
+					// Save the bytes from the mtime test so we can write it to disk
+					// if the test fails, or the cache doesn't verify
+					ByteArrayOutputStream preRead = new ByteArrayOutputStream();
+					copyStream.setOut(preRead);
+
+					JarInputStream networkJIS = new JarInputStream(copyStream);
+
+					// Get the mtime from the first entry so check it against the cache
+					{
+						JarEntry je = networkJIS.getNextJarEntry();
+						networkJIS.skip(Long.MAX_VALUE);
+						verifyJarEntry(je, jagexCertificateChain);
+						long vanillaClientMTime = je.getLastModifiedTime().toMillis();
+						if (!vanillaCacheIsInvalid && vanillaClientMTime != vanillaCacheMTime)
+						{
+							log.info("Vanilla cache is out of date: {} != {}", vanillaClientMTime, vanillaCacheMTime);
+							vanillaCacheIsInvalid = true;
+						}
+					}
+
+					// the mtime matches so the cache is probably up to date, but just make sure its fully
+					// intact before closing the server connection
+					if (!vanillaCacheIsInvalid)
+					{
+						try
+						{
+							// as with the request stream, its important to not early close vanilla too
+							JarInputStream vanillaCacheTest = new JarInputStream(Channels.newInputStream(vanilla));
+							verifyWholeJar(vanillaCacheTest, jagexCertificateChain);
+						}
+						catch (Exception e)
+						{
+							log.warn("Failed to verify the vanilla cache", e);
+							vanillaCacheIsInvalid = true;
+						}
+					}
+
+					if (vanillaCacheIsInvalid)
+					{
+						// the cache is not up to date, commit our peek to the file and write the rest of it, while verifying
+						vanilla.position(0);
+						OutputStream out = Channels.newOutputStream(vanilla);
+						out.write(preRead.toByteArray());
+						copyStream.setOut(out);
+						verifyWholeJar(networkJIS, jagexCertificateChain);
+						copyStream.skip(Long.MAX_VALUE); // write the trailer to the file too
+						out.flush();
+						vanilla.truncate(vanilla.position());
+					}
+					else
+					{
+						log.info("Using cached vanilla client");
+					}
+					return;
+>>>>>>> runelite/master
 				}
 				catch (IOException e)
 				{

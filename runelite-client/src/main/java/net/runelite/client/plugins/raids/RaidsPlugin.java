@@ -25,14 +25,20 @@
  */
 package net.runelite.client.plugins.raids;
 
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+=======
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Joiner;
+>>>>>>> runelite/master
 import com.google.inject.Binder;
 import com.google.inject.Provides;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import java.time.Instant;
+<<<<<<< HEAD
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,8 +49,19 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+=======
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
+import javax.inject.Inject;
+>>>>>>> runelite/master
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
@@ -120,6 +137,7 @@ public class RaidsPlugin extends Plugin
 	private static final String LEVEL_COMPLETE_MESSAGE = "level complete!";
 	private static final String RAID_COMPLETE_MESSAGE = "Congratulations - your raid is complete!";
 	private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("###.##");
+<<<<<<< HEAD
 	private static final Pattern ROTATION_REGEX = Pattern.compile("\\[(.*?)]");
 	private static final Pattern RAID_COMPLETE_REGEX = Pattern.compile("Congratulations - your raid is complete! Duration: ([0-9:]+)");
 	private static final ImmutableSet<String> GOOD_CRABS_FIRST = ImmutableSet.of(
@@ -159,6 +177,12 @@ public class RaidsPlugin extends Plugin
 	private static final Pattern PUZZLES = Pattern.compile("Puzzle - (\\w+)");
 
 	@Getter(AccessLevel.NONE)
+=======
+	private static final DecimalFormat POINTS_FORMAT = new DecimalFormat("#,###");
+	private static final String LAYOUT_COMMAND = "!layout";
+	private static final int MAX_LAYOUT_LEN = 300;
+
+>>>>>>> runelite/master
 	@Inject
 	private ChatMessageManager chatMessageManager;
 
@@ -227,6 +251,7 @@ public class RaidsPlugin extends Plugin
 	private WSClient ws;
 
 	@Getter
+<<<<<<< HEAD
 	private final List<String> roomWhitelist = new ArrayList<>();
 
 	@Getter
@@ -237,7 +262,20 @@ public class RaidsPlugin extends Plugin
 
 	@Getter
 	private final List<String> layoutWhitelist = new ArrayList<>();
+=======
+	private final Set<String> roomWhitelist = new HashSet<String>();
 
+	@Getter
+	private final Set<String> roomBlacklist = new HashSet<String>();
+
+	@Getter
+	private final Set<String> rotationWhitelist = new HashSet<String>();
+
+	@Getter
+	private final Set<String> layoutWhitelist = new HashSet<String>();
+>>>>>>> runelite/master
+
+	@Setter(AccessLevel.PACKAGE) // for the test
 	@Getter
 	private Raid raid;
 
@@ -798,8 +836,10 @@ public class RaidsPlugin extends Plugin
 		}
 	}
 
-	private void updateLists()
+	@VisibleForTesting
+	void updateLists()
 	{
+<<<<<<< HEAD
 		updateList(roomWhitelist, this.whitelistedRooms);
 		updateList(roomBlacklist, this.blacklistedRooms);
 		updateList(rotationWhitelist, this.whitelistedRotations);
@@ -876,9 +916,27 @@ public class RaidsPlugin extends Plugin
 		{
 			list.addAll(Text.fromCSV(input.toLowerCase()));
 		}
+=======
+		updateList(roomWhitelist, config.whitelistedRooms());
+		updateList(roomBlacklist, config.blacklistedRooms());
+		updateList(layoutWhitelist, config.whitelistedLayouts());
+
+		// Update rotation whitelist
+		rotationWhitelist.clear();
+		for (String line : config.whitelistedRotations().split("\\n"))
+		{
+			rotationWhitelist.add(line.toLowerCase().replace(" ", ""));
+		}
 	}
 
-	int getRotationMatches()
+	private void updateList(Collection<String> list, String input)
+	{
+		list.clear();
+		list.addAll(Text.fromCSV(input.toLowerCase()));
+>>>>>>> runelite/master
+	}
+
+	boolean getRotationMatches()
 	{
 		String rotation = raid.getRotationString().toLowerCase();
 		List<String> bosses = Text.fromCSV(rotation);
@@ -912,7 +970,11 @@ public class RaidsPlugin extends Plugin
 			}
 		}
 
+<<<<<<< HEAD
 		return 0;
+=======
+		return rotationWhitelist.contains(rotation);
+>>>>>>> runelite/master
 	}
 
 	private Point findLobbyBase()
@@ -1155,10 +1217,38 @@ public class RaidsPlugin extends Plugin
 		{
 			builder.append(StringUtils.leftPad(String.valueOf((int) Math.floor(seconds / 60)), 2, '0'));
 		}
+<<<<<<< HEAD
 		builder.append(":");
 		seconds %= 60;
 		builder.append(StringUtils.leftPad(String.valueOf(seconds), 2, '0'));
 		return builder.toString();
+=======
+
+		String layoutMessage = Joiner.on(", ").join(Arrays.stream(layout)
+			.map(l -> RaidRoom.valueOf(l.name()))
+			.filter(room -> room.getType() == RoomType.COMBAT || room.getType() == RoomType.PUZZLE)
+			.map(RaidRoom::getName)
+			.toArray());
+
+		if (layoutMessage.length() > MAX_LAYOUT_LEN)
+		{
+			log.debug("layout message too long! {}", layoutMessage.length());
+			return;
+		}
+
+		String response = new ChatMessageBuilder()
+			.append(ChatColorType.HIGHLIGHT)
+			.append("Layout: ")
+			.append(ChatColorType.NORMAL)
+			.append(layoutMessage)
+			.build();
+
+		log.debug("Setting response {}", response);
+		final MessageNode messageNode = chatMessage.getMessageNode();
+		messageNode.setRuneLiteFormatMessage(response);
+		chatMessageManager.update(messageNode);
+		client.refreshChat();
+>>>>>>> runelite/master
 	}
 
 	private void updateTooltip()

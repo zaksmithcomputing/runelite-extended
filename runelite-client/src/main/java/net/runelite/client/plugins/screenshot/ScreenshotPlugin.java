@@ -330,6 +330,7 @@ public class ScreenshotPlugin extends Plugin
 	@Subscribe
 	private void onPlayerDeath(PlayerDeath event)
 	{
+<<<<<<< HEAD
 		if (event.getPlayer() == client.getLocalPlayer() && config.screenshotPlayerDeath())
 		{
 			takeScreenshot(client.getLocalPlayer().getName() + " dead " + format(new Date()), "Deaths");
@@ -339,8 +340,16 @@ public class ScreenshotPlugin extends Plugin
 		if (this.screenshotFriendDeath && event.getPlayer().getName() != null
 			&& (event.getPlayer().isFriend() || event.getPlayer().isClanMember()
 			|| (client.getVar(Varbits.IN_RAID) == 1 || tob == 2 || tob == 3)))
+=======
+		Player player = playerDeath.getPlayer();
+		if (player == client.getLocalPlayer() && config.screenshotPlayerDeath())
+>>>>>>> runelite/master
 		{
 			takeScreenshot(event.getPlayer().getName() + " dead " + format(new Date()), "Deaths");
+		}
+		else if ((player.isClanMember() || player.isFriend()) && config.screenshotFriendDeath() && player.getCanvasTilePoly() != null)
+		{
+			takeScreenshot("Death " + player.getName() + " " + format(new Date()));
 		}
 	}
 

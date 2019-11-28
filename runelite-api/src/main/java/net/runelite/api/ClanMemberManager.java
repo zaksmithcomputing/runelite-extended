@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Levi <me@levischuck.com>
+ * Copyright (c) 2018, Adam <Adam@sigterm.info>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,12 +22,28 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.plugins.fps;
+package net.runelite.api;
 
-public enum FpsLimitMode
+<<<<<<< HEAD:runelite-api/src/main/java/net/runelite/api/FriendManager.java
+/**
+ * Represents the friend and ignore list manager.
+ */
+public interface FriendManager {}
+=======
+public interface ClanMemberManager extends NameableContainer<ClanMember>
 {
-	NEVER,
-	UNFOCUSED,
-	ALWAYS
-}
+	/**
+	 * Gets the clan owner of the currently joined clan chat
+	 *
+	 * @return
+	 */
+	String getClanOwner();
 
+	/**
+	 * Gets the clan chat name of the currently joined clan chat
+	 *
+	 * @return
+	 */
+	String getClanChatName();
+}
+>>>>>>> runelite/master:runelite-api/src/main/java/net/runelite/api/ClanMemberManager.java

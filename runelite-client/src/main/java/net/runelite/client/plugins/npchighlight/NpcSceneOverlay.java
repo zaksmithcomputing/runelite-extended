@@ -152,6 +152,7 @@ public class NpcSceneOverlay extends Overlay
 
 	private void renderNpcOverlay(Graphics2D graphics, NPC actor, Color color)
 	{
+<<<<<<< HEAD
 		if (plugin.isDrawInteracting() && actor.getInteracting() != null
 			&& actor.getInteracting() == client.getLocalPlayer())
 		{
@@ -169,6 +170,19 @@ public class NpcSceneOverlay extends Overlay
 					size = composition.getSize();
 				}
 
+=======
+		NPCComposition npcComposition = actor.getTransformedComposition();
+		if (npcComposition == null || !npcComposition.isInteractible())
+		{
+			return;
+		}
+
+		switch (config.renderStyle())
+		{
+			case SOUTH_WEST_TILE:
+			{
+				int size = npcComposition.getSize();
+>>>>>>> runelite/master
 				LocalPoint localPoint = actor.getLocalLocation();
 
 				int x = localPoint.getX() - ((size - 1) * Perspective.LOCAL_TILE_SIZE / 2);
@@ -180,6 +194,7 @@ public class NpcSceneOverlay extends Overlay
 				break;
 			}
 			case TILE:
+<<<<<<< HEAD
 				int size = 1;
 				NPCDefinition composition = actor.getTransformedDefinition();
 				if (composition != null)
@@ -188,6 +203,12 @@ public class NpcSceneOverlay extends Overlay
 				}
 				final LocalPoint lp = actor.getLocalLocation();
 				final Polygon tilePoly = Perspective.getCanvasTileAreaPoly(client, lp, size);
+=======
+				int size = npcComposition.getSize();
+				LocalPoint lp = actor.getLocalLocation();
+				Polygon tilePoly = Perspective.getCanvasTileAreaPoly(client, lp, size);
+
+>>>>>>> runelite/master
 				renderPoly(graphics, color, tilePoly);
 				break;
 			case HULL:

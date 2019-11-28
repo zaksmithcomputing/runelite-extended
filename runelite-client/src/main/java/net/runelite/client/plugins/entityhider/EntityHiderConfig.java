@@ -199,11 +199,29 @@ public interface EntityHiderConfig extends Config
 	}
 
 	@ConfigItem(
+<<<<<<< HEAD
 		position = 15,
 		keyName = "hideNPCsNames",
 		name = "Hide NPCs Names",
 		description = "Configures which NPCs to hide",
 		titleSection = "npcsTitle"
+=======
+		position = 9,
+		keyName = "hidePets",
+		name = "Hide Pets",
+		description = "Configures whether or not other player pets are hidden"
+	)
+	default boolean hidePets()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		position = 10,
+		keyName = "hideAttackers",
+		name = "Hide Attackers",
+		description = "Configures whether or not NPCs/players attacking you are hidden"
+>>>>>>> runelite/master
 	)
 	default String hideNPCsNames()
 	{
@@ -223,6 +241,7 @@ public interface EntityHiderConfig extends Config
 	}
 
 	@ConfigItem(
+<<<<<<< HEAD
 		position = 17,
 		keyName = "hideNPCsOnDeath",
 		name = "Hide NPCs On Death",
@@ -247,6 +266,9 @@ public interface EntityHiderConfig extends Config
 
 	@ConfigItem(
 		position = 19,
+=======
+		position = 11,
+>>>>>>> runelite/master
 		keyName = "hideProjectiles",
 		name = "Hide Projectiles",
 		description = "Configures whether or not projectiles are hidden",

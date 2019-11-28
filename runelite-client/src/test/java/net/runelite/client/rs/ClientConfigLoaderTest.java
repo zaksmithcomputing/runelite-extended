@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017, Adam <Adam@sigterm.info>
+ * Copyright (c) 2016-2019, Adam <Adam@sigterm.info>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,9 +22,9 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package net.runelite.client.rs;
 
+<<<<<<< HEAD
 import org.junit.Test;
 
 /**
@@ -36,18 +36,49 @@ public class ClientConfigLoaderTest
 	public void test()
 	{
 		final RSConfig config = ClientConfigLoader.fetch().blockingGet();
+=======
+import com.google.common.base.Charsets;
+import com.google.common.io.CharStreams;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+import org.junit.After;
+import static org.junit.Assert.assertEquals;
+import org.junit.Before;
+import org.junit.Test;
 
-		for (String key : config.getClassLoaderProperties().keySet())
+public class ClientConfigLoaderTest
+{
+	private final MockWebServer server = new MockWebServer();
+>>>>>>> runelite/master
+
+	@Before
+	public void before() throws IOException
+	{
+		String response;
+		try (InputStream in = getClass().getResourceAsStream("jav_config.ws"))
 		{
-			System.out.println(key + ": " + config.getClassLoaderProperties().get(key));
+			response = CharStreams.toString(new InputStreamReader(
+				in, Charsets.UTF_8));
 		}
+		server.enqueue(new MockResponse().setBody(response));
 
-		System.out.println("Applet properties:");
+		server.start();
+	}
 
-		for (String key : config.getAppletProperties().keySet())
-		{
-			System.out.println(key + ": " + config.getAppletProperties().get(key));
-		}
+	@After
+	public void after() throws IOException
+	{
+		server.shutdown();
+	}
+
+	@Test
+	public void testFetch() throws IOException
+	{
+		final RSConfig config = ClientConfigLoader.fetch(server.url("/"));
+		assertEquals("http://oldschool1.runescape.com/", config.getCodeBase());
 	}
 
 }

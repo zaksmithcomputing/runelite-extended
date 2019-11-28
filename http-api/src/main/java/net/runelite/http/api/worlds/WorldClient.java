@@ -66,11 +66,17 @@ public class WorldClient
 
 			try (Response response = client.newCall(request).execute())
 			{
+<<<<<<< HEAD
 				if (!response.isSuccessful())
 				{
 					logger.debug("Error looking up worlds: {}", response);
 					return Observable.just(null);
 				}
+=======
+				logger.debug("Error looking up worlds: {}", response);
+				throw new IOException("unsuccessful response looking up worlds");
+			}
+>>>>>>> runelite/master
 
 				InputStream in = response.body().byteStream();
 				return Observable.just(RuneLiteAPI.GSON.fromJson(new InputStreamReader(in), WorldResult.class));

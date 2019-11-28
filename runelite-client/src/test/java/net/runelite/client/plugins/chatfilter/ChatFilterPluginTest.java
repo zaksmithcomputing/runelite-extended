@@ -31,7 +31,11 @@ import com.google.inject.testing.fieldbinder.BoundFieldModule;
 import javax.inject.Inject;
 import net.runelite.api.Client;
 import net.runelite.api.Player;
+<<<<<<< HEAD
 import net.runelite.client.config.OpenOSRSConfig;
+=======
+import net.runelite.client.game.ClanManager;
+>>>>>>> runelite/master
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -57,7 +61,11 @@ public class ChatFilterPluginTest
 
 	@Mock
 	@Bind
+<<<<<<< HEAD
 	private OpenOSRSConfig openOSRSConfig;
+=======
+	private ClanManager clanManager;
+>>>>>>> runelite/master
 
 	@Mock
 	private Player localPlayer;
@@ -139,8 +147,13 @@ public class ChatFilterPluginTest
 	@Test
 	public void testMessageFromFriendIsFiltered()
 	{
+<<<<<<< HEAD
 		chatFilterPlugin.setFilterFriends(true);
 		when(client.isClanMember("Iron Mammal")).thenReturn(false);
+=======
+		when(clanManager.isClanMember("Iron Mammal")).thenReturn(false);
+		when(chatFilterConfig.filterFriends()).thenReturn(true);
+>>>>>>> runelite/master
 		assertTrue(chatFilterPlugin.shouldFilterPlayerMessage("Iron Mammal"));
 	}
 
@@ -162,8 +175,13 @@ public class ChatFilterPluginTest
 	@Test
 	public void testMessageFromClanIsNotFiltered()
 	{
+<<<<<<< HEAD
 		lenient().when(client.isClanMember("B0aty")).thenReturn(true);
 		chatFilterPlugin.setFilterClan(false);
+=======
+		when(clanManager.isClanMember("B0aty")).thenReturn(true);
+		when(chatFilterConfig.filterClan()).thenReturn(false);
+>>>>>>> runelite/master
 		assertFalse(chatFilterPlugin.shouldFilterPlayerMessage("B0aty"));
 	}
 
@@ -177,8 +195,13 @@ public class ChatFilterPluginTest
 	@Test
 	public void testMessageFromNonFriendNonClanIsFiltered()
 	{
+<<<<<<< HEAD
 		lenient().when(client.isFriended("Woox", false)).thenReturn(false);
 		lenient().when(client.isClanMember("Woox")).thenReturn(false);
+=======
+		when(client.isFriended("Woox", false)).thenReturn(false);
+		when(clanManager.isClanMember("Woox")).thenReturn(false);
+>>>>>>> runelite/master
 		assertTrue(chatFilterPlugin.shouldFilterPlayerMessage("Woox"));
 	}
 }

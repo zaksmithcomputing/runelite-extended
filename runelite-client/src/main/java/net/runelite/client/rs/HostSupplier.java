@@ -27,6 +27,7 @@ package net.runelite.client.rs;
 
 import java.util.ArrayDeque;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Queue;
 import java.util.Random;
@@ -36,8 +37,12 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.http.api.RuneLiteAPI;
 import net.runelite.http.api.worlds.World;
 import net.runelite.http.api.worlds.WorldClient;
+<<<<<<< HEAD
 import net.runelite.http.api.worlds.WorldResult;
 import okhttp3.HttpUrl;
+=======
+import net.runelite.http.api.worlds.WorldType;
+>>>>>>> runelite/master
 
 @Slf4j
 class HostSupplier implements Supplier<HttpUrl>
@@ -53,6 +58,7 @@ class HostSupplier implements Supplier<HttpUrl>
 			return hosts.poll();
 		}
 
+<<<<<<< HEAD
 		List<HttpUrl> newHosts = new WorldClient(RuneLiteAPI.CLIENT)
 			.lookupWorlds()
 			.map(WorldResult::getWorlds)
@@ -61,6 +67,17 @@ class HostSupplier implements Supplier<HttpUrl>
 			.map(World::getAddress)
 			.map(HttpUrl::parse)
 			.collect(Collectors.toList());
+=======
+		try
+		{
+			List<String> newHosts = new WorldClient(RuneLiteAPI.CLIENT)
+				.lookupWorlds()
+				.getWorlds()
+				.stream()
+				.filter(w -> w.getTypes().isEmpty() || EnumSet.of(WorldType.MEMBERS).equals(w.getTypes()))
+				.map(World::getAddress)
+				.collect(Collectors.toList());
+>>>>>>> runelite/master
 
 		Collections.shuffle(newHosts, random);
 

@@ -165,6 +165,17 @@ public interface ScreenshotConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "friendDeath",
+		name = "Screenshot Friend Deaths",
+		description = "Configures whether or not screenshots are automatically taken when friends or clan members die.",
+		position = 11
+	)
+	default boolean screenshotFriendDeath()
+	{
+		return false;
+	}
+
+	@ConfigItem(
 		keyName = "duels",
 		name = "Screenshot Duels",
 		description = "Configures whether or not screenshots are automatically taken of the duel end screen.",

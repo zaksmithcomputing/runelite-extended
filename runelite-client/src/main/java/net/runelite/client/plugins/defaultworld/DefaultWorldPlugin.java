@@ -25,7 +25,10 @@
 package net.runelite.client.plugins.defaultworld;
 
 import com.google.inject.Provides;
+<<<<<<< HEAD
 import io.reactivex.schedulers.Schedulers;
+=======
+>>>>>>> runelite/master
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
@@ -36,11 +39,16 @@ import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.SessionOpen;
+import net.runelite.client.game.WorldService;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.util.WorldUtil;
 import net.runelite.http.api.worlds.World;
+<<<<<<< HEAD
 import net.runelite.http.api.worlds.WorldClient;
+=======
+import net.runelite.http.api.worlds.WorldResult;
+>>>>>>> runelite/master
 
 @PluginDescriptor(
 	name = "Default World",
@@ -58,10 +66,14 @@ public class DefaultWorldPlugin extends Plugin
 	private DefaultWorldConfig config;
 
 	@Inject
+<<<<<<< HEAD
 	private ClientThread clientThread;
 
 	@Inject
 	private WorldClient worldClient;
+=======
+	private WorldService worldService;
+>>>>>>> runelite/master
 
 	private int worldCache;
 	private boolean worldChangeRequired;
@@ -122,6 +134,7 @@ public class DefaultWorldPlugin extends Plugin
 			return;
 		}
 
+<<<<<<< HEAD
 		worldClient.lookupWorlds()
 			.subscribeOn(Schedulers.io())
 			.observeOn(Schedulers.from(clientThread))
@@ -155,6 +168,35 @@ public class DefaultWorldPlugin extends Plugin
 				},
 				(e) -> log.warn("Error looking up world {}. Error: {}", correctedWorld, e)
 			);
+=======
+		final WorldResult worldResult = worldService.getWorlds();
+
+		if (worldResult == null)
+		{
+			log.warn("Failed to lookup worlds.");
+			return;
+		}
+
+		final World world = worldResult.findWorld(correctedWorld);
+
+		if (world != null)
+		{
+			final net.runelite.api.World rsWorld = client.createWorld();
+			rsWorld.setActivity(world.getActivity());
+			rsWorld.setAddress(world.getAddress());
+			rsWorld.setId(world.getId());
+			rsWorld.setPlayerCount(world.getPlayers());
+			rsWorld.setLocation(world.getLocation());
+			rsWorld.setTypes(WorldUtil.toWorldTypes(world.getTypes()));
+
+			client.changeWorld(rsWorld);
+			log.debug("Applied new world {}", correctedWorld);
+		}
+		else
+		{
+			log.warn("World {} not found.", correctedWorld);
+		}
+>>>>>>> runelite/master
 	}
 
 	private void applyWorld()

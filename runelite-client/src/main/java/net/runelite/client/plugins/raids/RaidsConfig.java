@@ -301,9 +301,13 @@ public interface RaidsConfig extends Config
 		titleSection = "roomConfig",
 		keyName = "whitelistedRotations",
 		name = "Whitelisted rotations",
+<<<<<<< HEAD
 		hidden = true,
 		unhide = "enableRotationWhitelist",
 		description = "Warn when boss rotation doesn't match a whitelisted one. Add rotations like [tekton, muttadile, guardians]"
+=======
+		description = "Warn when boss rotation doesn't match a whitelisted one. Add rotations like: tekton, muttadiles, guardians - each rotation on its own line"
+>>>>>>> runelite/master
 	)
 	default String whitelistedRotations()
 	{

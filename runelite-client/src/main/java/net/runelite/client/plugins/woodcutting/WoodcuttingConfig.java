@@ -77,6 +77,7 @@ public interface WoodcuttingConfig extends Config
 
 	@ConfigItem(
 		position = 5,
+<<<<<<< HEAD
 		keyName = "showGPEarned",
 		name = "Show GP earned",
 		description = "Configures whether to show amount of gp earned by chopping trees"
@@ -84,5 +85,14 @@ public interface WoodcuttingConfig extends Config
 	default boolean showGPEarned()
 	{
 		return false;
+=======
+		keyName = "showRespawnTimers",
+		name = "Show respawn timers",
+		description = "Configures whether to display the respawn timer overlay"
+	)
+	default boolean showRespawnTimers()
+	{
+		return true;
+>>>>>>> runelite/master
 	}
 }

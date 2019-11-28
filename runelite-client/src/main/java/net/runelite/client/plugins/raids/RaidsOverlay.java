@@ -254,6 +254,7 @@ public class RaidsOverlay extends Overlay
 			.color(color)
 			.build());
 
+<<<<<<< HEAD
 		if (plugin.recordRaid() != null)
 		{
 			panelComponent.getChildren().add(TitleComponent.builder()
@@ -300,6 +301,8 @@ public class RaidsOverlay extends Overlay
 		}
 
 		Set<Integer> imageIds = new HashSet<>();
+=======
+>>>>>>> runelite/master
 		for (Room layoutRoom : plugin.getRaid().getLayout().getRooms())
 		{
 			int position = layoutRoom.getPosition();
@@ -315,6 +318,7 @@ public class RaidsOverlay extends Overlay
 			switch (room.getType())
 			{
 				case COMBAT:
+<<<<<<< HEAD
 					bossCount++;
 					if (plugin.getRoomWhitelist().contains(room.getBoss().getName().toLowerCase()))
 					{
@@ -322,6 +326,14 @@ public class RaidsOverlay extends Overlay
 					}
 					else if (plugin.getRoomBlacklist().contains(room.getBoss().getName().toLowerCase())
 						|| plugin.isEnableRotationWhitelist() && bossCount > bossMatches)
+=======
+					if (plugin.getRoomWhitelist().contains(room.getName().toLowerCase()))
+					{
+						color = Color.GREEN;
+					}
+					else if (plugin.getRoomBlacklist().contains(room.getName().toLowerCase())
+							|| config.enableRotationWhitelist() && !plugin.getRotationMatches())
+>>>>>>> runelite/master
 					{
 						color = Color.RED;
 					}

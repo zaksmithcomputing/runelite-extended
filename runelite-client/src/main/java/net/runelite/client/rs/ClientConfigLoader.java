@@ -41,6 +41,7 @@ class ClientConfigLoader
 		throw new RuntimeException();
 	}
 
+<<<<<<< HEAD
 	private static final String CONFIG_URL = "http://oldschool.runescape.com/jav_config.ws";
 	private static final int MAX_ATTEMPTS = 100;
 
@@ -52,6 +53,13 @@ class ClientConfigLoader
 
 			HostSupplier supplier = null;
 			HttpUrl url = HttpUrl.parse(CONFIG_URL);
+=======
+	static RSConfig fetch(HttpUrl url) throws IOException
+	{
+		final Request request = new Request.Builder()
+			.url(url)
+			.build();
+>>>>>>> runelite/master
 
 			final RSConfig config = new RSConfig();
 
