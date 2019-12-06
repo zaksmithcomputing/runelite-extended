@@ -24,29 +24,25 @@
  */
 package net.runelite.client.plugins.chatboxperformance;
 
-import com.google.inject.Provides;
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.ScriptID;
 import net.runelite.api.events.ScriptCallbackEvent;
+import net.runelite.api.widgets.WidgetType;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.api.widgets.WidgetPositionMode;
 import net.runelite.api.widgets.WidgetSizeMode;
-import net.runelite.api.widgets.WidgetType;
 import net.runelite.client.callback.ClientThread;
-import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
-import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 
 @PluginDescriptor(
-	name = "Chatbox performance"
+	name = "Chatbox performance",
+	hidden = true
 )
-@Singleton
 public class ChatboxPerformancePlugin extends Plugin
 {
 	@Inject
@@ -54,24 +50,6 @@ public class ChatboxPerformancePlugin extends Plugin
 
 	@Inject
 	private ClientThread clientThread;
-
-	@Inject
-	private ChatboxPerformanceConfig config;
-
-	@Subscribe
-	public void onConfigChanged(ConfigChanged event)
-	{
-		if (event.getGroup().equals("chatboxperformance"))
-		{
-			fixDarkBackground();
-		}
-	}
-
-	@Provides
-	ChatboxPerformanceConfig getConfig(ConfigManager configManager)
-	{
-		return configManager.getConfig(ChatboxPerformanceConfig.class);
-	}
 
 	@Override
 	public void startUp()
@@ -106,7 +84,7 @@ public class ChatboxPerformancePlugin extends Plugin
 
 	private void fixDarkBackground()
 	{
-		int currOpacity = 255;
+		int currOpacity = 256;
 		int prevY = 0;
 		Widget[] children = client.getWidget(WidgetInfo.CHATBOX_TRANSPARENT_BACKGROUND).getDynamicChildren();
 		Widget prev = null;
@@ -130,10 +108,7 @@ public class ChatboxPerformancePlugin extends Plugin
 			}
 
 			prevY = w.getRelativeY();
-			if (config.transparentChatBox())
-			{
-				currOpacity -= 3;
-			}
+			currOpacity -= 3; // Rough number, can't get exactly the same as Jagex because of rounding
 			prev = w;
 		}
 		if (prev != null)
@@ -144,7 +119,7 @@ public class ChatboxPerformancePlugin extends Plugin
 
 	private void fixWhiteLines(boolean upperLine)
 	{
-		int currOpacity = 255;
+		int currOpacity = 256;
 		int prevWidth = 0;
 		Widget[] children = client.getWidget(WidgetInfo.CHATBOX_TRANSPARENT_LINES).getDynamicChildren();
 		Widget prev = null;

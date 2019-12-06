@@ -1,4 +1,4 @@
-package net.runelite.client.plugins.menuentryswapper.comparables;
+package net.runelite.client.menus;
 
 import lombok.EqualsAndHashCode;
 import net.runelite.api.MenuEntry;
@@ -9,9 +9,9 @@ import net.runelite.client.menus.AbstractComparableEntry;
 import org.apache.commons.lang3.StringUtils;
 
 @EqualsAndHashCode(callSuper = true)
-public class InventoryComparableEntry extends AbstractComparableEntry
+public class BankComparableEntry extends AbstractComparableEntry
 {
-	public InventoryComparableEntry(String option, String itemName, boolean strictTarget)
+	public BankComparableEntry(String option, String itemName, boolean strictTarget)
 	{
 		this.setOption(option);
 		this.setTarget(Text.standardize(itemName));
@@ -20,18 +20,25 @@ public class InventoryComparableEntry extends AbstractComparableEntry
 
 	public boolean matches(MenuEntry entry)
 	{
-		final int groupId = WidgetInfo.TO_GROUP(entry.getParam1());
-
-		if (groupId != WidgetID.INVENTORY_GROUP_ID)
+		if (isNotBankWidget(entry.getParam1()))
 		{
 			return false;
 		}
 
-		if (isStrictTarget() && Text.standardize(entry.getTarget()).equals(this.getTarget()))
+		if (isStrictTarget() && !Text.standardize(entry.getTarget()).equals(this.getTarget()))
 		{
 			return false;
 		}
 
 		return StringUtils.containsIgnoreCase(entry.getOption(), this.getOption()) && Text.standardize(entry.getTarget()).contains(this.getTarget());
+	}
+
+	static boolean isNotBankWidget(int widgetID)
+	{
+		final int groupId = WidgetInfo.TO_GROUP(widgetID);
+
+		return groupId != WidgetID.BANK_GROUP_ID
+			&& groupId != WidgetID.BANK_INVENTORY_GROUP_ID
+			&& groupId != WidgetID.GRAND_EXCHANGE_GROUP_ID;
 	}
 }

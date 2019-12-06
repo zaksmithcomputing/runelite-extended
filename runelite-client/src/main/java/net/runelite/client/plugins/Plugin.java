@@ -38,8 +38,9 @@ import net.runelite.api.events.Event;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.eventbus.EventScheduler;
 import net.runelite.client.eventbus.Subscribe;
+import org.pf4j.ExtensionPoint;
 
-public abstract class Plugin implements Module
+public abstract class Plugin implements Module, ExtensionPoint
 {
 	private final Set<Subscription> annotatedSubscriptions = findSubscriptions();
 	private final Object annotatedSubsLock = new Object();

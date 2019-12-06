@@ -121,6 +121,7 @@ import net.runelite.client.ui.components.colorpicker.RuneliteColorPicker;
 import net.runelite.client.util.ColorUtil;
 import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.MiscUtils;
+import static net.runelite.client.util.SwingUtil.syncExec;
 import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
@@ -159,7 +160,7 @@ public class ConfigPanel extends PluginPanel
 	private boolean showingPluginList = true;
 	private int scrollBarPosition = 0;
 
-	private static final ImmutableList<PluginType> definedOrder = ImmutableList.of(PluginType.IMPORTANT, PluginType.EXTERNAL, PluginType.PVM, PluginType.SKILLING, PluginType.PVP, PluginType.UTILITY, PluginType.GENERAL_USE);
+	private static final ImmutableList<PluginType> definedOrder = ImmutableList.of(PluginType.IMPORTANT, PluginType.EXTERNAL, PluginType.PVM, PluginType.SKILLING, PluginType.PVP, PluginType.UTILITY, PluginType.MINIGAME, PluginType.MISCELLANEOUS);
 	private static final Comparator<PluginListItem> categoryComparator = Comparator.comparing(plugin -> definedOrder.indexOf(plugin.getPluginType()));
 
 	static
@@ -306,28 +307,53 @@ public class ConfigPanel extends PluginPanel
 		pluginManager.getPlugins().stream()
 			.filter(plugin -> !plugin.getClass().getAnnotation(PluginDescriptor.class).hidden())
 			.forEach(plugin ->
-				{
-					final PluginDescriptor descriptor = plugin.getClass().getAnnotation(PluginDescriptor.class);
-					final Config config = pluginManager.getPluginConfigProxy(plugin);
-					final ConfigDescriptor configDescriptor = config == null ? null : configManager.getConfigDescriptor(config);
-
-					final PluginListItem listItem = new PluginListItem(this, configManager, plugin, descriptor, config, configDescriptor);
-					listItem.setPinned(pinnedPlugins.contains(listItem.getName()));
-					listItem.setColor(getColorByCategory(OpenOSRSConfig, listItem.getPluginType()));
-					listItem.setHidden(getHiddenByCategory(OpenOSRSConfig, listItem.getPluginType()));
-					plugins.add(listItem);
-				}
+				plugins.add(createPluginListItem(plugin, pinnedPlugins))
 			);
 
 		final PluginListItem chatColor = new PluginListItem(this, configManager, chatColorConfig,
 			configManager.getConfigDescriptor(chatColorConfig),
-			CHAT_COLOR_PLUGIN, "Recolor chat text", PluginType.GENERAL_USE, "colour", "messages");
+			CHAT_COLOR_PLUGIN, "Recolor chat text", PluginType.MISCELLANEOUS, "colour", "messages");
 		chatColor.setPinned(pinnedPlugins.contains(CHAT_COLOR_PLUGIN));
+		chatColor.nameLabel.setForeground(OpenOSRSConfig.miscellaneousColor());
 		plugins.add(chatColor);
 
 		pluginList.addAll(plugins);
 
 		ConfigPanel.sortPluginList(OpenOSRSConfig, null);
+	}
+
+	PluginListItem createPluginListItem(Plugin plugin, List<String> pinnedPlugins)
+	{
+		final PluginDescriptor descriptor = plugin.getClass().getAnnotation(PluginDescriptor.class);
+		final Config config = pluginManager.getPluginConfigProxy(plugin);
+		final ConfigDescriptor configDescriptor = config == null ? null : configManager.getConfigDescriptor(config);
+
+		final PluginListItem listItem = new PluginListItem(this, configManager, plugin, descriptor, config, configDescriptor);
+		listItem.setPinned(pinnedPlugins.contains(listItem.getName()));
+		listItem.setColor(getColorByCategory(OpenOSRSConfig, listItem.getPluginType()));
+		listItem.setHidden(getHiddenByCategory(OpenOSRSConfig, listItem.getPluginType()));
+
+		return listItem;
+	}
+
+	void removePlugin(Plugin plugin)
+	{
+		pluginList.removeIf(pluginListItem -> pluginListItem.getPlugin() == plugin);
+	}
+
+	void addPlugin(Plugin plugin)
+	{
+		try
+		{
+			syncExec(() -> {
+				pluginList.add(createPluginListItem(plugin, getPinnedPluginNames()));
+				ConfigPanel.sortPluginList(OpenOSRSConfig, null);
+			});
+		}
+		catch (InvocationTargetException | InterruptedException e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 	void refreshPluginList()
@@ -1412,6 +1438,10 @@ public class ConfigPanel extends PluginPanel
 				return openOSRSConfig.skillingColor();
 			case UTILITY:
 				return openOSRSConfig.utilityColor();
+			case MISCELLANEOUS:
+				return openOSRSConfig.miscellaneousColor();
+			case MINIGAME:
+				return openOSRSConfig.minigameColor();
 		}
 
 		return null;
@@ -1419,7 +1449,7 @@ public class ConfigPanel extends PluginPanel
 
 	public static boolean getHiddenByCategory(OpenOSRSConfig openOSRSConfig, PluginType pluginType)
 	{
-		if (pluginType == PluginType.IMPORTANT || pluginType == PluginType.GENERAL_USE)
+		if (pluginType == PluginType.IMPORTANT)
 		{
 			return false;
 		}
@@ -1441,6 +1471,10 @@ public class ConfigPanel extends PluginPanel
 				return openOSRSConfig.hideSkillingPlugins();
 			case UTILITY:
 				return openOSRSConfig.hideUtilityPlugins();
+			case MISCELLANEOUS:
+				return openOSRSConfig.hideMiscellaneousPlugins();
+			case MINIGAME:
+				return openOSRSConfig.hideMinigamePlugins();
 		}
 
 		return false;

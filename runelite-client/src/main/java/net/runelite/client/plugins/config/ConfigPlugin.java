@@ -40,6 +40,7 @@ import net.runelite.client.config.RuneLiteConfig;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.OverlayMenuClicked;
 import net.runelite.client.events.PluginChanged;
+import net.runelite.client.events.ExternalPluginChanged;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.PluginManager;
@@ -130,6 +131,21 @@ public class ConfigPlugin extends Plugin
 	@Subscribe
 	private void onPluginChanged(PluginChanged event)
 	{
+		SwingUtilities.invokeLater(configPanel::refreshPluginList);
+	}
+
+	@Subscribe
+	private void onExternalPluginChanged(ExternalPluginChanged event)
+	{
+		if (event.isAdded())
+		{
+			configPanel.addPlugin(event.getPlugin());
+		}
+		else
+		{
+			configPanel.removePlugin(event.getPlugin());
+		}
+
 		SwingUtilities.invokeLater(configPanel::refreshPluginList);
 	}
 

@@ -197,7 +197,7 @@ public class DevToolsPlugin extends Plugin
 		navButton = NavigationButton.builder()
 			.tooltip("Developer Tools")
 			.icon(icon)
-			.priority(1)
+			.priority(2)
 			.panel(panel)
 			.build();
 

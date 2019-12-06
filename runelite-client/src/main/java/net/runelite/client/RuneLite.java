@@ -67,6 +67,7 @@ import net.runelite.client.game.XpDropManager;
 import net.runelite.client.game.chatbox.ChatboxPanelManager;
 import net.runelite.client.graphics.ModelOutlineRenderer;
 import net.runelite.client.menus.MenuManager;
+import net.runelite.client.plugins.ExternalPluginManager;
 import net.runelite.client.plugins.PluginManager;
 import net.runelite.client.rs.ClientLoader;
 import net.runelite.client.rs.ClientUpdateCheckMode;
@@ -101,6 +102,9 @@ public class RuneLite
 
 	@Inject
 	private PluginManager pluginManager;
+
+	@Inject
+	private ExternalPluginManager externalPluginManager;
 
 	@Inject
 	private ConfigManager configManager;
@@ -216,11 +220,11 @@ public class RuneLite
 			System.exit(0);
 		}
 
-		if (options.has("debug"))
-		{
+//		if (options.has("debug"))
+//		{
 			final Logger logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 			logger.setLevel(Level.DEBUG);
-		}
+//		}
 
 		if (options.has("proxy"))
 		{
@@ -332,25 +336,31 @@ public class RuneLite
 		// Tell the plugin manager if client is outdated or not
 		pluginManager.setOutdated(isOutdated);
 
-		// Load external plugins
-		pluginManager.loadExternalPlugins();
+		// Initialize UI
+		RuneLiteSplashScreen.stage(.60, "Initialize UI");
+		clientUI.init(this);
 
 		// Load the plugins, but does not start them yet.
 		// This will initialize configuration
 		pluginManager.loadCorePlugins();
-		RuneLiteSplashScreen.stage(.70, "Finalizing configuration");
+
+		// Load external plugins
+		externalPluginManager.startExternalPluginManager();
+
+		RuneLiteSplashScreen.stage(.75, "Finalizing configuration");
 
 		// Plugins have provided their config, so set default config
 		// to main settings
 		pluginManager.loadDefaultPluginConfiguration();
 
-		// Start client session
-		RuneLiteSplashScreen.stage(.75, "Starting core interface");
-		clientSessionManager.start();
+		externalPluginManager.startExternalUpdateManager();
 
-		// Initialize UI
-		RuneLiteSplashScreen.stage(.80, "Initialize UI");
-		clientUI.init(this);
+		RuneLiteSplashScreen.stage(.77, "Updating external plugins");
+		externalPluginManager.update();
+
+		// Start client session
+		RuneLiteSplashScreen.stage(.80, "Starting core interface");
+		clientSessionManager.start();
 
 		// Initialize Discord service
 		discordService.init();
@@ -385,6 +395,7 @@ public class RuneLite
 
 		// Start plugins
 		pluginManager.startCorePlugins();
+		externalPluginManager.loadPlugins();
 
 		// Register additional schedulers
 		if (this.client != null)

@@ -27,6 +27,7 @@
 package net.runelite.client.plugins.openosrs;
 
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.List;
 import javax.inject.Inject;
@@ -48,7 +49,10 @@ import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.PluginType;
 import net.runelite.client.plugins.config.ConfigPanel;
+import net.runelite.client.ui.ClientToolbar;
+import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.util.HotkeyListener;
+import net.runelite.client.util.ImageUtil;
 
 @PluginDescriptor(
 	loadWhenOutdated = true, // prevent users from disabling
@@ -74,6 +78,11 @@ public class OpenOSRSPlugin extends Plugin
 	@Inject
 	private ClientThread clientThread;
 
+	@Inject
+	private ClientToolbar clientToolbar;
+
+	private NavigationButton navButton;
+
 	private final HotkeyListener hotkeyListener = new HotkeyListener(() -> this.keybind)
 	{
 		@Override
@@ -93,6 +102,17 @@ public class OpenOSRSPlugin extends Plugin
 	@Override
 	protected void startUp()
 	{
+		ExternalPluginManagerPanel panel = injector.getInstance(ExternalPluginManagerPanel.class);
+
+		final BufferedImage icon = ImageUtil.getResourceStreamFromClass(getClass(), "externalmanager_icon.png");
+
+		navButton = NavigationButton.builder()
+			.tooltip("External Plugin Manager")
+			.icon(icon)
+			.priority(1)
+			.panel(panel)
+			.build();
+		clientToolbar.addNavigation(navButton);
 
 		entered = -1;
 		enterIdx = 0;
@@ -104,6 +124,8 @@ public class OpenOSRSPlugin extends Plugin
 	@Override
 	protected void shutDown()
 	{
+		clientToolbar.removeNavigation(navButton);
+
 		entered = 0;
 		enterIdx = 0;
 		expectInput = false;
@@ -259,7 +281,7 @@ public class OpenOSRSPlugin extends Plugin
 	{
 		ConfigPanel.pluginList.forEach(listItem ->
 		{
-			if (listItem.getPluginType() == PluginType.GENERAL_USE || listItem.getPluginType() == PluginType.IMPORTANT)
+			if (listItem.getPluginType() == PluginType.IMPORTANT)
 			{
 				return;
 			}

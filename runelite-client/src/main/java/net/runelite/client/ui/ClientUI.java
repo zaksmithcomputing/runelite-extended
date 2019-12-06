@@ -1026,11 +1026,13 @@ public class ClientUI
 
 				opacityField.setFloat(frame, opacity);
 				setOpacityMethod.invoke(peerField.get(frame), opacity);
-
 			}
 			catch (NoSuchFieldException | NoSuchMethodException | ClassNotFoundException | IllegalAccessException | InvocationTargetException | NullPointerException e)
 			{
-				// e.printStackTrace();
+				if (!(e instanceof NullPointerException))
+				{
+					e.printStackTrace();
+				}
 			}
 		});
 	}
