@@ -6,11 +6,8 @@ import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Module;
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.AccessDeniedException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -18,13 +15,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.RuneLite;
-import static net.runelite.client.RuneLite.PLUGIN_DIR;
+import static net.runelite.client.RuneLite.EXTERNALPLUGIN_DIR;
+import static net.runelite.client.RuneLite.SYSTEM_VERSION;
 import net.runelite.client.RuneLiteProperties;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigManager;
@@ -79,16 +79,13 @@ class ExternalPluginManager
 		this.configManager = configManager;
 		this.eventBus = eventBus;
 
+		//noinspection ResultOfMethodCallIgnored
+		EXTERNALPLUGIN_DIR.mkdirs();
+
 		boolean debug = RuneLiteProperties.getLauncherVersion() == null && RuneLiteProperties.getPluginPath() != null;
 
-		this.externalPluginManager = new DefaultPluginManager(debug ? Paths.get(RuneLiteProperties.getPluginPath() + File.separator + "release") : PLUGIN_DIR.toPath())
+		this.externalPluginManager = new DefaultPluginManager(debug ? Paths.get(RuneLiteProperties.getPluginPath() + File.separator + "release") : EXTERNALPLUGIN_DIR.toPath())
 		{
-			@Override
-			protected PluginLoader createPluginLoader()
-			{
-				return new JarPluginLoader(this);
-			}
-
 			@Override
 			protected PluginDescriptorFinder createPluginDescriptorFinder()
 			{
@@ -102,11 +99,40 @@ class ExternalPluginManager
 			}
 
 			@Override
+			protected PluginLoader createPluginLoader()
+			{
+				return new JarPluginLoader(this);
+			}
+
+			@Override
 			public RuntimeMode getRuntimeMode()
 			{
 				return debug ? RuntimeMode.DEVELOPMENT : RuntimeMode.DEPLOYMENT;
 			}
 		};
+		this.externalPluginManager.setSystemVersion(SYSTEM_VERSION);
+	}
+
+	private static URL toRepositoryUrl(String owner, String name) throws MalformedURLException
+	{
+		return new URL("https://raw.githubusercontent.com/" + owner + "/" + name + "/master/");
+	}
+
+	public static boolean testRepository(String owner, String name)
+	{
+		final List<UpdateRepository> repositories = new ArrayList<>();
+		try
+		{
+			repositories.add(new DefaultUpdateRepository("github", new URL("https://raw.githubusercontent.com/" + owner + "/" + name + "/master/")));
+		}
+		catch (MalformedURLException e)
+		{
+			return false;
+		}
+		DefaultPluginManager testPluginManager = new DefaultPluginManager(EXTERNALPLUGIN_DIR.toPath());
+		UpdateManager updateManager = new UpdateManager(testPluginManager, repositories);
+
+		return updateManager.getPlugins().size() > 0;
 	}
 
 	public void startExternalPluginManager()
@@ -168,44 +194,6 @@ class ExternalPluginManager
 		openOSRSConfig.setExternalRepositories(config.toString());
 	}
 
-	private static URL toRepositoryUrl(String owner, String name) throws MalformedURLException
-	{
-		return new URL("https://raw.githubusercontent.com/" + owner + "/" + name + "/master/");
-	}
-
-	public static boolean testRepository(String owner, String name)
-	{
-		final List<UpdateRepository> repositories = new ArrayList<>();
-		try
-		{
-			repositories.add(new DefaultUpdateRepository("github", new URL("https://raw.githubusercontent.com/" + owner + "/" + name + "/master/")));
-		}
-		catch (MalformedURLException e)
-		{
-			return false;
-		}
-		DefaultPluginManager testPluginManager = new DefaultPluginManager(PLUGIN_DIR.toPath());
-		UpdateManager updateManager = new UpdateManager(testPluginManager, repositories);
-
-		return updateManager.getPlugins().size() > 0;
-	}
-
-	private static void deleteMappedFilesIfExists(Path path) throws IOException
-	{
-		while (true)
-		{
-			try
-			{
-				Files.deleteIfExists(path);
-				break;
-			}
-			catch (AccessDeniedException e)
-			{
-				System.gc();
-			}
-		}
-	}
-
 	private void instantiatePlugin(Plugin plugin) throws PluginInstantiationException
 	{
 		List<Plugin> scannedPlugins = new ArrayList<>(runelitePluginManager.getPlugins());
@@ -215,7 +203,7 @@ class ExternalPluginManager
 		List<Plugin> deps = new ArrayList<>();
 		for (net.runelite.client.plugins.PluginDependency pluginDependency : pluginDependencies)
 		{
-			Optional<Plugin> dependency =  scannedPlugins.stream().filter(p -> p.getClass() == pluginDependency.value()).findFirst();
+			Optional<Plugin> dependency = scannedPlugins.stream().filter(p -> p.getClass() == pluginDependency.value()).findFirst();
 			if (!dependency.isPresent())
 			{
 				throw new PluginInstantiationException("Unmet dependency for " + clazz.getSimpleName() + ": " + pluginDependency.value().getSimpleName());
@@ -286,25 +274,17 @@ class ExternalPluginManager
 
 	private void loadPlugin(String pluginId)
 	{
-		List<PluginWrapper> startedPlugins = externalPluginManager.getStartedPlugins();
-
-		for (PluginWrapper pluginWrapper : startedPlugins)
+		List<Plugin> extensions = externalPluginManager.getExtensions(Plugin.class, pluginId);
+		for (Plugin plugin : extensions)
 		{
-			if (pluginWrapper.getDescriptor().getPluginId().equals(pluginId))
+			try
 			{
-				List<Plugin> extensions = externalPluginManager.getExtensions(Plugin.class, pluginId);
-				for (Plugin plugin : extensions)
-				{
-					try
-					{
-						instantiatePlugin(plugin);
-					}
-					catch (PluginInstantiationException e)
-					{
-						log.warn("Error instantiating plugin!", e);
-						return;
-					}
-				}
+				instantiatePlugin(plugin);
+			}
+			catch (PluginInstantiationException e)
+			{
+				log.warn("Error instantiating plugin!", e);
+				return;
 			}
 		}
 	}
@@ -377,15 +357,25 @@ class ExternalPluginManager
 				}
 			}
 		}
+
 		return null;
 	}
 
 	public void install(String pluginId) throws VerifyException
 	{
-		// Null version defaults to latest
+		// Null version returns the last release version of this plugin for given system version
 		try
 		{
-			updateManager.installPlugin(pluginId, null);
+			if (getDisabledPlugins().contains(pluginId))
+			{
+				this.externalPluginManager.enablePlugin(pluginId);
+				this.externalPluginManager.startPlugin(pluginId);
+			}
+			else
+			{
+				updateManager.installPlugin(pluginId, null);
+			}
+
 			loadPlugin(pluginId);
 		}
 		catch (DependencyResolver.DependenciesNotFoundException ex)
@@ -417,29 +407,8 @@ class ExternalPluginManager
 			return;
 		}
 
-		while (true)
-		{
-			try
-			{
-				externalPluginManager.stopPlugin(pluginId);
-				break;
-			}
-			catch (IllegalArgumentException ignored)
-			{
-			}
-		}
-
 		externalPluginManager.stopPlugin(pluginId);
-		updateManager.uninstallPlugin(pluginId);
-		try
-		{
-			deleteMappedFilesIfExists(pluginPath);
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-		externalPluginManager.unloadPlugin(pluginId);
+		externalPluginManager.disablePlugin(pluginId);
 	}
 
 	public void update()
@@ -452,6 +421,7 @@ class ExternalPluginManager
 				PluginInfo.PluginRelease lastRelease = updateManager.getLastPluginRelease(plugin.id);
 				String lastVersion = lastRelease.version;
 				boolean updated = updateManager.updatePlugin(plugin.id, lastVersion);
+
 				if (!updated)
 				{
 					log.warn("Cannot update plugin '{}'", plugin.id);
@@ -474,5 +444,24 @@ class ExternalPluginManager
 		}
 
 		return deps;
+	}
+
+	public static <T> Predicate<T> not(Predicate<T> t)
+	{
+		return t.negate();
+	}
+
+	public List<String> getDisabledPlugins()
+	{
+		return this.externalPluginManager.getResolvedPlugins()
+			.stream()
+			.filter(not(this.externalPluginManager.getStartedPlugins()::contains))
+			.map(PluginWrapper::getPluginId)
+			.collect(Collectors.toList());
+	}
+
+	public List<PluginWrapper> getStartedPlugins()
+	{
+		return this.externalPluginManager.getStartedPlugins();
 	}
 }

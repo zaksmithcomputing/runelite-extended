@@ -57,5 +57,5 @@ public @interface PluginDescriptor
 
 	boolean loadWhenOutdated() default false;
 
-	PluginType type() default PluginType.MISCELLANEOUS;
+	PluginType type() default PluginType.UNCATEGORIZED;
 }

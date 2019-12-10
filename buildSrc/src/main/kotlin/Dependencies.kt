@@ -86,7 +86,7 @@ object Libraries {
         const val okhttp3 = "4.2.2"
         const val orangeExtensions = "1.0"
         const val petitparser = "2.2.0"
-        const val pf4j = "3.1.0"
+        const val pf4j = "3.2.0"
         const val pf4jUpdate = "2.2.0"
         const val rxjava = "2.2.14"
         const val rxrelay = "2.1.1"

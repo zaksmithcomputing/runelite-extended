@@ -64,7 +64,7 @@ import net.runelite.client.util.ImageUtil;
 public class OpenOSRSPlugin extends Plugin
 {
 	private final openosrsKeyListener keyListener = new openosrsKeyListener();
-	private final List<String> colorOptions = Arrays.asList("externalColor", "pvmColor", "pvpColor", "skillingColor", "utilityColor");
+	private final List<String> colorOptions = Arrays.asList("enabledColors", "pvmColor", "pvpColor", "skillingColor", "utilityColor", "minigameColor", "miscellaneousColor");
 
 	@Inject
 	private OpenOSRSConfig config;
@@ -287,7 +287,6 @@ public class OpenOSRSPlugin extends Plugin
 			}
 
 			listItem.setColor(ConfigPanel.getColorByCategory(config, listItem.getPluginType()));
-			listItem.setHidden(ConfigPanel.getHiddenByCategory(config, listItem.getPluginType()));
 		});
 	}
 }

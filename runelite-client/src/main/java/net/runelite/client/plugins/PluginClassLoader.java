@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Abex
+ * Copyright (c) 2016-2017, Adam <Adam@sigterm.info>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,54 +22,46 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.plugins.info;
+package net.runelite.client.plugins;
 
-import java.awt.image.BufferedImage;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import net.runelite.client.plugins.Plugin;
-import net.runelite.client.plugins.PluginDescriptor;
-import net.runelite.client.plugins.PluginType;
-import net.runelite.client.ui.ClientToolbar;
-import net.runelite.client.ui.NavigationButton;
-import net.runelite.client.util.ImageUtil;
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 
-@PluginDescriptor(
-	name = "Info Panel",
-	description = "Enable the Info panel",
-	loadWhenOutdated = true,
-	type = PluginType.MISCELLANEOUS
-)
-@Singleton
-public class InfoPlugin extends Plugin
+/**
+ * A classloader for external plugins
+ *
+ * @author Adam
+ */
+public class PluginClassLoader extends URLClassLoader
 {
-	@Inject
-	private ClientToolbar clientToolbar;
+	private final ClassLoader parent;
 
-	private NavigationButton navButton;
-
-
-	@Override
-	protected void startUp()
+	public PluginClassLoader(File plugin, ClassLoader parent) throws MalformedURLException
 	{
-		InfoPanel panel = injector.getInstance(InfoPanel.class);
-		panel.init();
+		super(
+			new URL[]
+				{
+					plugin.toURI().toURL()
+				},
+			null // null or else class path scanning includes everything from the main class loader
+		);
 
-		final BufferedImage icon = ImageUtil.getResourceStreamFromClass(getClass(), "info_icon.png");
-
-		navButton = NavigationButton.builder()
-			.tooltip("Info")
-			.icon(icon)
-			.priority(9)
-			.panel(panel)
-			.build();
-
-		clientToolbar.addNavigation(navButton);
+		this.parent = parent;
 	}
 
 	@Override
-	protected void shutDown()
+	public Class<?> loadClass(String name) throws ClassNotFoundException
 	{
-		clientToolbar.removeNavigation(navButton);
+		try
+		{
+			return super.loadClass(name);
+		}
+		catch (ClassNotFoundException ex)
+		{
+			// fall back to main class loader
+			return parent.loadClass(name);
+		}
 	}
 }

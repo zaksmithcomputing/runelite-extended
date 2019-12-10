@@ -106,6 +106,7 @@ public class SwingUtil
 		UIManager.put("FormattedTextField.selectionForeground", Color.WHITE);
 		UIManager.put("TextArea.selectionBackground", ColorScheme.BRAND_BLUE_TRANSPARENT);
 		UIManager.put("TextArea.selectionForeground", Color.WHITE);
+		UIManager.put("TextArea.inactiveBackground", ColorScheme.DARKER_GRAY_COLOR);
 		UIManager.put("ProgressBar.background", ColorScheme.BRAND_BLUE_TRANSPARENT.darker());
 		UIManager.put("ProgressBar.foreground", ColorScheme.BRAND_BLUE);
 		UIManager.put("ProgressBar.selectionBackground", ColorScheme.BRAND_BLUE);

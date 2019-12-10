@@ -7,10 +7,11 @@ import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.swing.BorderFactory;
@@ -18,10 +19,14 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import lombok.extern.slf4j.Slf4j;
+import net.runelite.client.eventbus.EventBus;
+import net.runelite.client.events.ExternalPluginChanged;
 import net.runelite.client.plugins.ExternalPluginManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.DynamicGridLayout;
@@ -29,23 +34,16 @@ import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.shadowlabel.JShadowedLabel;
 import net.runelite.client.util.ImageUtil;
-import net.runelite.client.util.LinkBrowser;
+import net.runelite.client.util.SwingUtil;
 import org.pf4j.update.PluginInfo;
 import org.pf4j.update.UpdateManager;
 import org.pf4j.update.UpdateRepository;
 import org.pf4j.update.VerifyException;
 
+@Slf4j
 @Singleton
 class ExternalPluginManagerPanel extends PluginPanel
 {
-	private final ExternalPluginManager externalPluginManager;
-	private final UpdateManager updateManager;
-
-	private final Font normalFont = FontManager.getRunescapeFont();
-	private final Font smallFont = FontManager.getRunescapeSmallFont();
-
-	private static final ImageIcon DISCORD_ICON;
-	private static final ImageIcon DISCORD_HOVER_ICON;
 	private static final ImageIcon ADD_ICON;
 	private static final ImageIcon ADD_HOVER_ICON;
 	private static final ImageIcon DELETE_ICON;
@@ -55,10 +53,6 @@ class ExternalPluginManagerPanel extends PluginPanel
 
 	static
 	{
-		final BufferedImage discord = ImageUtil.getResourceStreamFromClass(OpenOSRSPlugin.class, "discord_icon.png");
-		DISCORD_ICON = new ImageIcon(discord);
-		DISCORD_HOVER_ICON = new ImageIcon(ImageUtil.alphaOffset(discord, 0.53f));
-
 		final BufferedImage addIcon =
 			ImageUtil.recolorImage(
 				ImageUtil.getResourceStreamFromClass(OpenOSRSPlugin.class, "add_icon.png"), ColorScheme.BRAND_BLUE
@@ -79,18 +73,37 @@ class ExternalPluginManagerPanel extends PluginPanel
 		DELETE_HOVER_ICON_GRAY = new ImageIcon(ImageUtil.alphaOffset(ImageUtil.grayscaleImage(deleteImg), 0.53f));
 	}
 
-	public static <T> Predicate<T> not(Predicate<T> t)
-	{
-		return t.negate();
-	}
+	private final ExternalPluginManager externalPluginManager;
+	private final UpdateManager updateManager;
+	private final Font normalFont = FontManager.getRunescapeFont();
+	private final Font smallFont = FontManager.getRunescapeSmallFont();
 
 	@Inject
-	private ExternalPluginManagerPanel(ExternalPluginManager externalPluginManager)
+	private ExternalPluginManagerPanel(ExternalPluginManager externalPluginManager, EventBus eventBus)
 	{
 		this.externalPluginManager = externalPluginManager;
 		this.updateManager = externalPluginManager.getUpdateManager();
 
+		eventBus.subscribe(ExternalPluginChanged.class, this, this::onExternalPluginChanged);
+
 		buildPanel();
+	}
+
+	private void onExternalPluginChanged(ExternalPluginChanged externalPluginChanged)
+	{
+		try
+		{
+			SwingUtil.syncExec(this::buildPanel);
+		}
+		catch (InvocationTargetException | InterruptedException e)
+		{
+			e.printStackTrace();
+		}
+	}
+
+	public static <T> Predicate<T> not(Predicate<T> t)
+	{
+		return t.negate();
 	}
 
 	private void buildPanel()
@@ -105,10 +118,14 @@ class ExternalPluginManagerPanel extends PluginPanel
 		northPanel.setBorder(new EmptyBorder(1, 0, 10, 0));
 
 		JLabel title = new JLabel();
+		JLabel titleTest = new JLabel();
 		JLabel addRepo = new JLabel(ADD_ICON);
 
 		title.setText("External Plugin Manager");
 		title.setForeground(Color.WHITE);
+
+		titleTest.setText("rr");
+		titleTest.setForeground(Color.WHITE);
 
 		addRepo.setToolTipText("Add new repository");
 		addRepo.addMouseListener(new MouseAdapter()
@@ -152,8 +169,14 @@ class ExternalPluginManagerPanel extends PluginPanel
 			}
 		});
 
+		JPanel titleActions = new JPanel(new BorderLayout(3, 0));
+		titleActions.setBorder(new EmptyBorder(0, 0, 0, 0));
+
+		titleActions.add(addRepo, BorderLayout.WEST);
+		titleActions.add(addRepo, BorderLayout.EAST);
+
 		northPanel.add(title, BorderLayout.WEST);
-		northPanel.add(addRepo, BorderLayout.EAST);
+		northPanel.add(titleActions, BorderLayout.EAST);
 
 		add(northPanel, BorderLayout.NORTH);
 		add(getAllPlugins(), BorderLayout.CENTER);
@@ -169,10 +192,23 @@ class ExternalPluginManagerPanel extends PluginPanel
 		panel.setBackground(ColorScheme.DARK_GRAY_COLOR);
 
 		List<PluginInfo> availablePlugins = updateManager.getAvailablePlugins();
-		List<PluginInfo> plugin = updateManager.getPlugins();
+		List<PluginInfo> plugins = updateManager.getPlugins();
+		List<String> disabledPlugins = externalPluginManager.getDisabledPlugins();
 
-		List<PluginInfo> installedPluginsList = plugin.stream().filter(not(availablePlugins::contains)).collect(Collectors.toList());
-		List<PluginInfo> availablePluginsList = plugin.stream().filter(availablePlugins::contains).collect(Collectors.toList());
+		List<PluginInfo> installedPluginsList = new ArrayList<>();
+		List<PluginInfo> availablePluginsList = new ArrayList<>();
+
+		for (PluginInfo pluginInfo : plugins)
+		{
+			if (availablePlugins.contains(pluginInfo) || disabledPlugins.contains(pluginInfo.id))
+			{
+				availablePluginsList.add(pluginInfo);
+			}
+			else
+			{
+				installedPluginsList.add(pluginInfo);
+			}
+		}
 
 		panel.add(repositories(), BorderLayout.NORTH);
 		panel.add(installedPlugins(installedPluginsList), BorderLayout.CENTER);
@@ -404,54 +440,19 @@ class ExternalPluginManagerPanel extends PluginPanel
 		titleActions.add(install, BorderLayout.EAST);
 		titleWrapper.add(titleActions, BorderLayout.EAST);
 
-		JPanel bodyContainer = new JPanel(new BorderLayout());
-		bodyContainer.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-
-		JPanel descriptionActions = new JPanel(new BorderLayout(3, 0));
-		descriptionActions.setBorder(new EmptyBorder(0, 0, 0, 8));
-		descriptionActions.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-
-		if (pluginInfo.projectUrl != null)
-		{
-			JLabel discordAction = new JLabel();
-			discordAction.setIcon(DISCORD_ICON);
-			discordAction.setToolTipText(pluginInfo.provider + " discord");
-			discordAction.addMouseListener(new MouseAdapter()
-			{
-				@Override
-				public void mousePressed(MouseEvent e)
-				{
-					LinkBrowser.browse(pluginInfo.projectUrl);
-				}
-
-				@Override
-				public void mouseEntered(MouseEvent e)
-				{
-					discordAction.setIcon(DISCORD_HOVER_ICON);
-				}
-
-				@Override
-				public void mouseExited(MouseEvent e)
-				{
-					discordAction.setIcon(DISCORD_ICON);
-				}
-			});
-			descriptionActions.add(discordAction, BorderLayout.EAST);
-		}
-
-		JLabel description = new JLabel();
-		description.setText("<html>" + pluginInfo.description + "</html>");
+		JTextArea description = new JTextArea();
+		description.setText(pluginInfo.description);
 		description.setFont(smallFont);
 		description.setBorder(null);
-		description.setPreferredSize(new Dimension(0, 24));
-		description.setForeground(Color.WHITE);
 		description.setBorder(new EmptyBorder(0, 8, 0, 0));
-
-		bodyContainer.add(description, BorderLayout.CENTER);
-		bodyContainer.add(descriptionActions, BorderLayout.EAST);
+		description.setLineWrap(true);
+		description.setWrapStyleWord(true);
+		description.setHighlighter(null);
+		description.setEnabled(false);
+		description.setDisabledTextColor(Color.WHITE);
 
 		panel.add(titleWrapper, BorderLayout.NORTH);
-		panel.add(bodyContainer, BorderLayout.CENTER);
+		panel.add(description, BorderLayout.CENTER);
 
 		return panel;
 	}

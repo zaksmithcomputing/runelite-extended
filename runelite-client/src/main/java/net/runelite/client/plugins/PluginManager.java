@@ -60,6 +60,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
+import javax.swing.JOptionPane;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.RuneLite;
@@ -97,6 +98,9 @@ public class PluginManager
 	private final List<Plugin> activePlugins = new CopyOnWriteArrayList<>();
 	private final String runeliteGroupName = RuneLiteConfig.class
 		.getAnnotation(ConfigGroup.class).value();
+
+	@Inject
+	ExternalPluginLoader externalPluginLoader;
 
 	@Setter
 	boolean isOutdated;
@@ -200,6 +204,11 @@ public class PluginManager
 		{
 			configManager.setDefaultConfiguration(config, false);
 		}
+	}
+
+	public void loadExternalPlugins()
+	{
+		externalPluginLoader.scanAndLoad();
 	}
 
 	public void loadCorePlugins() throws IOException
@@ -385,6 +394,17 @@ public class PluginManager
 		}
 		catch (InterruptedException | InvocationTargetException | IllegalArgumentException ex)
 		{
+			try
+			{
+				syncExec(() ->
+				{
+					JOptionPane.showMessageDialog(null, plugin.getClass().getSimpleName() + " could not be loaded, it's probably outdated.", "Error", JOptionPane.ERROR_MESSAGE);
+				});
+			}
+			catch (InvocationTargetException | InterruptedException e)
+			{
+				e.printStackTrace();
+			}
 			throw new PluginInstantiationException(ex);
 		}
 
