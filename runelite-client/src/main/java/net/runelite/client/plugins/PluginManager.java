@@ -239,8 +239,13 @@ public class PluginManager
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	List<Plugin> scanAndInstantiate(ClassLoader classLoader, String packageName) throws IOException
+	{
+		return scanAndInstantiate(classLoader, packageName, false);
+	}
+
+	@SuppressWarnings("unchecked")
+	List<Plugin> scanAndInstantiate(ClassLoader classLoader, String packageName, boolean external) throws IOException
 	{
 		RuneLiteSplashScreen.stage(.61, "Loading plugins");
 		MutableGraph<Class<? extends Plugin>> graph = GraphBuilder
@@ -270,6 +275,12 @@ public class PluginManager
 			{
 				log.warn("Class {} has plugin descriptor, but is not a plugin",
 					clazz);
+				continue;
+			}
+
+			if (external && pluginDescriptor.type() != PluginType.EXTERNAL)
+			{
+				log.error("Class {} is using the legacy external plugin loader but doesn't have PluginType.EXTERNAL", clazz);
 				continue;
 			}
 

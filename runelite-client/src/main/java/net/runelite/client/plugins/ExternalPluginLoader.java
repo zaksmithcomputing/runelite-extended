@@ -93,9 +93,10 @@ public class ExternalPluginLoader
 		}
 
 		List<Plugin> loadedPlugins;
+
 		try
 		{
-			loadedPlugins = pluginManager.scanAndInstantiate(loader, null);
+			loadedPlugins = pluginManager.scanAndInstantiate(loader, null, true);
 		}
 		catch (IOException ex)
 		{
