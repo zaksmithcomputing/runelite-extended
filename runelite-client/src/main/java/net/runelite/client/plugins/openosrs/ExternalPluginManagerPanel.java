@@ -1,5 +1,6 @@
 package net.runelite.client.plugins.openosrs;
 
+import com.google.gson.JsonSyntaxException;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -21,8 +22,10 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
@@ -97,10 +100,14 @@ class ExternalPluginManagerPanel extends PluginPanel
 	private final IconTextField searchBar = new IconTextField();
 	private String filterMode = "All";
 	private JPanel pluginPanels;
+	private JScrollPane scrollPane;
+	// private int scrollBarPosition = 0;
 
 	@Inject
 	private ExternalPluginManagerPanel(ExternalPluginManager externalPluginManager, EventBus eventBus)
 	{
+		super(false);
+
 		this.externalPluginManager = externalPluginManager;
 		this.updateManager = externalPluginManager.getUpdateManager();
 
@@ -132,7 +139,6 @@ class ExternalPluginManagerPanel extends PluginPanel
 		});
 
 		buildPanel();
-		getScrollPane().getVerticalScrollBar().setValue(0);
 	}
 
 	public static <T> Predicate<T> not(Predicate<T> t)
@@ -204,7 +210,6 @@ class ExternalPluginManagerPanel extends PluginPanel
 				{
 					filterMode = input;
 					buildPanel();
-					getScrollPane().getVerticalScrollBar().setValue(0);
 				}
 			}
 
@@ -248,7 +253,6 @@ class ExternalPluginManagerPanel extends PluginPanel
 
 				externalPluginManager.addRepository(owner.getText(), name.getText());
 				buildPanel();
-				getScrollPane().getVerticalScrollBar().setValue(0);
 			}
 
 			@Override
@@ -282,8 +286,6 @@ class ExternalPluginManagerPanel extends PluginPanel
 
 	private void onSearchBarChanged()
 	{
-		final String text = searchBar.getText();
-
 		for (Component c : pluginPanels.getComponents())
 		{
 			if (!(c instanceof IconTextField))
@@ -294,7 +296,7 @@ class ExternalPluginManagerPanel extends PluginPanel
 
 		getAllPluginPanels();
 		revalidate();
-		getScrollPane().getVerticalScrollBar().setValue(0);
+		repaint();
 	}
 
 	private JPanel getAllPlugins()
@@ -309,15 +311,18 @@ class ExternalPluginManagerPanel extends PluginPanel
 			panel.add(repositories(), BorderLayout.NORTH);
 		}
 
+		if (!filterMode.equals("Repositories"))
+		{
+			panel.add(searchBar, BorderLayout.NORTH);
+		}
+
 		pluginPanels = new JPanel();
 		pluginPanels.setLayout(new BorderLayout(0, 10));
 
-		if (!filterMode.equals("Repositories"))
-		{
-			pluginPanels.add(searchBar, BorderLayout.NORTH);
-		}
+		scrollPane = new JScrollPane(pluginPanels);
+		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
-		panel.add(pluginPanels, BorderLayout.SOUTH);
+		panel.add(scrollPane, BorderLayout.CENTER);
 
 		getAllPluginPanels();
 
@@ -326,9 +331,25 @@ class ExternalPluginManagerPanel extends PluginPanel
 
 	private void getAllPluginPanels()
 	{
-		List<PluginInfo> availablePlugins = updateManager.getAvailablePlugins();
-		List<PluginInfo> plugins = updateManager.getPlugins();
+		List<PluginInfo> availablePlugins = null;
+		List<PluginInfo> plugins = null;
 		List<String> disabledPlugins = externalPluginManager.getDisabledPlugins();
+
+		try
+		{
+			availablePlugins = updateManager.getAvailablePlugins();
+			plugins = updateManager.getPlugins();
+		}
+		catch (JsonSyntaxException ex)
+		{
+			log.error(String.valueOf(ex));
+		}
+
+		if (availablePlugins == null || plugins == null)
+		{
+			JOptionPane.showMessageDialog(null, "The external plugin list could not be loaded.", "Error", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
 
 		List<PluginInfo> installedPluginsList = new ArrayList<>();
 		List<PluginInfo> availablePluginsList = new ArrayList<>();
@@ -349,7 +370,7 @@ class ExternalPluginManagerPanel extends PluginPanel
 			filterMode.equals("All plugins") ||
 			filterMode.equals("Installed plugins"))
 		{
-			pluginPanels.add(installedPlugins(installedPluginsList), BorderLayout.CENTER);
+			pluginPanels.add(installedPlugins(installedPluginsList), BorderLayout.NORTH);
 		}
 
 		if (filterMode.equals("All") ||
@@ -597,13 +618,14 @@ class ExternalPluginManagerPanel extends PluginPanel
 					else
 					{
 						externalPluginManager.uninstall(pluginInfo.id);
-						buildPanel();
 					}
 				}
 				else
 				{
 					installPlugin(pluginInfo);
 				}
+
+				buildPanel();
 			}
 
 			@Override
@@ -648,8 +670,6 @@ class ExternalPluginManagerPanel extends PluginPanel
 		{
 			JOptionPane.showMessageDialog(null, pluginInfo.name + " could not be installed, the hash could not be verified.", "Error!", JOptionPane.ERROR_MESSAGE);
 		}
-
-		buildPanel();
 	}
 
 	boolean matchesSearchTerms(PluginInfo pluginInfo)
@@ -666,4 +686,28 @@ class ExternalPluginManagerPanel extends PluginPanel
 		}
 		return true;
 	}
+
+//	private void saveScrollValue()
+//	{
+//		if (scrollPane != null)
+//		{
+//			scrollBarPosition = scrollPane.getVerticalScrollBar().getValue();
+//		}
+//	}
+//
+//	private void resetScrollValue()
+//	{
+//		if (scrollPane != null)
+//		{
+//			scrollPane.getVerticalScrollBar().setValue(scrollBarPosition);
+//		}
+//	}
+//
+//	private void topScrollValue()
+//	{
+//		if (scrollPane != null)
+//		{
+//			scrollPane.getVerticalScrollBar().setValue(0);
+//		}
+//	}
 }

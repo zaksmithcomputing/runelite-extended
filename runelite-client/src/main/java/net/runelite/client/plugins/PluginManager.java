@@ -69,6 +69,7 @@ import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.config.RuneLiteConfig;
 import net.runelite.client.eventbus.EventBus;
+import net.runelite.client.events.ExternalPluginsLoaded;
 import net.runelite.client.events.PluginChanged;
 import net.runelite.client.events.SessionClose;
 import net.runelite.client.events.SessionOpen;
@@ -408,9 +409,7 @@ public class PluginManager
 			try
 			{
 				syncExec(() ->
-				{
-					JOptionPane.showMessageDialog(null, plugin.getClass().getSimpleName() + " could not be loaded, it's probably outdated.", "Error", JOptionPane.ERROR_MESSAGE);
-				});
+					JOptionPane.showMessageDialog(null, plugin.getClass().getSimpleName() + " could not be loaded, it's probably outdated.", "Error", JOptionPane.ERROR_MESSAGE));
 			}
 			catch (InvocationTargetException | InterruptedException e)
 			{

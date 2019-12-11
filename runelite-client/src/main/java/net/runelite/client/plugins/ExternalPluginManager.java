@@ -32,6 +32,7 @@ import net.runelite.client.config.ConfigManager;
 import net.runelite.client.config.OpenOSRSConfig;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.events.ExternalPluginChanged;
+import net.runelite.client.events.ExternalPluginsLoaded;
 import net.runelite.client.ui.RuneLiteSplashScreen;
 import org.pf4j.DefaultPluginManager;
 import org.pf4j.DependencyResolver;
@@ -282,6 +283,9 @@ class ExternalPluginManager
 			RuneLiteSplashScreen.stage(.90, 1, "Starting external plugins", index++, startedPlugins.size());
 			loadPlugin(plugin.getPluginId());
 		}
+
+		eventBus.post(ExternalPluginsLoaded.class, new ExternalPluginsLoaded());
+		log.info("EXTERNAL LOADED!");
 	}
 
 	private void loadPlugin(String pluginId)
