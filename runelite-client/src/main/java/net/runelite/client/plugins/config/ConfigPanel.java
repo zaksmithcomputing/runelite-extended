@@ -49,9 +49,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 import javax.inject.Singleton;
@@ -151,6 +153,7 @@ public class ConfigPanel extends PluginPanel
 	private final ChatColorConfig chatColorConfig;
 	private final ColorPickerManager colorPickerManager;
 	public static final List<PluginListItem> pluginList = new ArrayList<>();
+	final Set<JPanel> sectionsCopy = new HashSet<>();
 
 	private final IconTextField searchBar = new IconTextField();
 	private final JPanel topPanel;
@@ -401,6 +404,9 @@ public class ConfigPanel extends PluginPanel
 
 		pluginList.forEach(mainPanel::remove);
 
+		sectionsCopy.forEach(mainPanel::remove);
+		sectionsCopy.clear();
+
 		showMatchingPlugins(true, text);
 		showMatchingPlugins(false, text);
 
@@ -459,6 +465,7 @@ public class ConfigPanel extends PluginPanel
 
 		// Allow for sub-sections
 		mainPanel.add(section);
+		sectionsCopy.add(section);
 
 		return sectionContents;
 	}
@@ -477,12 +484,10 @@ public class ConfigPanel extends PluginPanel
 				}
 
 				sections.get("Pinned").add(pluginListItem);
-
 				continue;
 			}
 
 			String sectionName = pluginListItem.getPluginType().getName();
-
 
 			if (!sections.containsKey(sectionName))
 			{
@@ -490,6 +495,7 @@ public class ConfigPanel extends PluginPanel
 			}
 
 			sections.get(sectionName).add(pluginListItem);
+
 		}
 	}
 
@@ -510,7 +516,6 @@ public class ConfigPanel extends PluginPanel
 		}
 		else
 		{
-
 			final String[] searchTerms = text.toLowerCase().split(" ");
 			pluginList.forEach(listItem ->
 			{
@@ -1539,7 +1544,6 @@ public class ConfigPanel extends PluginPanel
 		{
 			return new Dimension(PANEL_WIDTH, super.getPreferredSize().height);
 		}
-
 	}
 
 	private void reloadPluginlist(PluginListItem listItem, Config config, ConfigDescriptor cd)

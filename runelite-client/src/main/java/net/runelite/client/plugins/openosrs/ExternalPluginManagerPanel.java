@@ -2,6 +2,7 @@ package net.runelite.client.plugins.openosrs;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.MouseAdapter;
@@ -9,6 +10,7 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -24,6 +26,8 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.events.ExternalPluginChanged;
@@ -32,9 +36,11 @@ import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.DynamicGridLayout;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.PluginPanel;
+import net.runelite.client.ui.components.IconTextField;
 import net.runelite.client.ui.components.shadowlabel.JShadowedLabel;
 import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.SwingUtil;
+import org.apache.commons.text.similarity.JaroWinklerDistance;
 import org.pf4j.update.PluginInfo;
 import org.pf4j.update.UpdateManager;
 import org.pf4j.update.UpdateRepository;
@@ -44,8 +50,12 @@ import org.pf4j.update.VerifyException;
 @Singleton
 class ExternalPluginManagerPanel extends PluginPanel
 {
+	private static final JaroWinklerDistance DISTANCE = new JaroWinklerDistance();
+
 	private static final ImageIcon ADD_ICON;
 	private static final ImageIcon ADD_HOVER_ICON;
+	private static final ImageIcon FILTER_ICON;
+	private static final ImageIcon FILTER_HOVER_ICON;
 	private static final ImageIcon DELETE_ICON;
 	private static final ImageIcon DELETE_HOVER_ICON;
 	private static final ImageIcon DELETE_ICON_GRAY;
@@ -59,6 +69,13 @@ class ExternalPluginManagerPanel extends PluginPanel
 			);
 		ADD_ICON = new ImageIcon(addIcon);
 		ADD_HOVER_ICON = new ImageIcon(ImageUtil.alphaOffset(addIcon, 0.53f));
+
+		final BufferedImage filterIcon =
+			ImageUtil.recolorImage(
+				ImageUtil.getResourceStreamFromClass(OpenOSRSPlugin.class, "filter.png"), ColorScheme.BRAND_BLUE
+			);
+		FILTER_ICON = new ImageIcon(filterIcon);
+		FILTER_HOVER_ICON = new ImageIcon(ImageUtil.alphaOffset(filterIcon, 0.53f));
 
 		final BufferedImage deleteImg =
 			ImageUtil.recolorImage(
@@ -77,6 +94,9 @@ class ExternalPluginManagerPanel extends PluginPanel
 	private final UpdateManager updateManager;
 	private final Font normalFont = FontManager.getRunescapeFont();
 	private final Font smallFont = FontManager.getRunescapeSmallFont();
+	private final IconTextField searchBar = new IconTextField();
+	private String filterMode = "All";
+	private JPanel pluginPanels;
 
 	@Inject
 	private ExternalPluginManagerPanel(ExternalPluginManager externalPluginManager, EventBus eventBus)
@@ -86,7 +106,38 @@ class ExternalPluginManagerPanel extends PluginPanel
 
 		eventBus.subscribe(ExternalPluginChanged.class, this, this::onExternalPluginChanged);
 
+		searchBar.setIcon(IconTextField.Icon.SEARCH);
+		searchBar.setPreferredSize(new Dimension(PluginPanel.PANEL_WIDTH - 20, 30));
+		searchBar.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+		searchBar.setHoverBackgroundColor(ColorScheme.DARK_GRAY_HOVER_COLOR);
+		searchBar.getDocument().addDocumentListener(new DocumentListener()
+		{
+			@Override
+			public void insertUpdate(DocumentEvent e)
+			{
+				onSearchBarChanged();
+			}
+
+			@Override
+			public void removeUpdate(DocumentEvent e)
+			{
+				onSearchBarChanged();
+			}
+
+			@Override
+			public void changedUpdate(DocumentEvent e)
+			{
+				onSearchBarChanged();
+			}
+		});
+
 		buildPanel();
+		getScrollPane().getVerticalScrollBar().setValue(0);
+	}
+
+	public static <T> Predicate<T> not(Predicate<T> t)
+	{
+		return t.negate();
 	}
 
 	private void onExternalPluginChanged(ExternalPluginChanged externalPluginChanged)
@@ -101,11 +152,6 @@ class ExternalPluginManagerPanel extends PluginPanel
 		}
 	}
 
-	public static <T> Predicate<T> not(Predicate<T> t)
-	{
-		return t.negate();
-	}
-
 	private void buildPanel()
 	{
 		removeAll();
@@ -118,14 +164,62 @@ class ExternalPluginManagerPanel extends PluginPanel
 		northPanel.setBorder(new EmptyBorder(1, 0, 10, 0));
 
 		JLabel title = new JLabel();
-		JLabel titleTest = new JLabel();
 		JLabel addRepo = new JLabel(ADD_ICON);
+		JLabel filter = new JLabel(FILTER_ICON);
 
 		title.setText("External Plugin Manager");
 		title.setForeground(Color.WHITE);
 
-		titleTest.setText("rr");
-		titleTest.setForeground(Color.WHITE);
+		filter.setToolTipText("Filter list");
+		filter.addMouseListener(new MouseAdapter()
+		{
+			@Override
+			public void mousePressed(MouseEvent mouseEvent)
+			{
+				List<String> choices = new ArrayList<String>()
+				{{
+					add("All");
+					add("Repositories");
+					add("All plugins");
+					add("Installed plugins");
+					add("All Available plugins");
+				}};
+
+				List<UpdateRepository> repositories = externalPluginManager.getRepositories();
+
+				if (repositories.size() > 1)
+				{
+					for (UpdateRepository repository : repositories)
+					{
+						choices.add(repository.getId() + "'s plugins");
+					}
+				}
+
+				String input = (String) JOptionPane.showInputDialog(null, "Choose now...",
+					"Filter", JOptionPane.QUESTION_MESSAGE, null,
+					choices.toArray(),
+					choices.get(0));
+
+				if (input != null)
+				{
+					filterMode = input;
+					buildPanel();
+					getScrollPane().getVerticalScrollBar().setValue(0);
+				}
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent mouseEvent)
+			{
+				filter.setIcon(FILTER_HOVER_ICON);
+			}
+
+			@Override
+			public void mouseExited(MouseEvent mouseEvent)
+			{
+				filter.setIcon(FILTER_ICON);
+			}
+		});
 
 		addRepo.setToolTipText("Add new repository");
 		addRepo.addMouseListener(new MouseAdapter()
@@ -154,6 +248,7 @@ class ExternalPluginManagerPanel extends PluginPanel
 
 				externalPluginManager.addRepository(owner.getText(), name.getText());
 				buildPanel();
+				getScrollPane().getVerticalScrollBar().setValue(0);
 			}
 
 			@Override
@@ -172,7 +267,7 @@ class ExternalPluginManagerPanel extends PluginPanel
 		JPanel titleActions = new JPanel(new BorderLayout(3, 0));
 		titleActions.setBorder(new EmptyBorder(0, 0, 0, 0));
 
-		titleActions.add(addRepo, BorderLayout.WEST);
+		titleActions.add(filter, BorderLayout.WEST);
 		titleActions.add(addRepo, BorderLayout.EAST);
 
 		northPanel.add(title, BorderLayout.WEST);
@@ -185,12 +280,52 @@ class ExternalPluginManagerPanel extends PluginPanel
 		repaint();
 	}
 
+	private void onSearchBarChanged()
+	{
+		final String text = searchBar.getText();
+
+		for (Component c : pluginPanels.getComponents())
+		{
+			if (!(c instanceof IconTextField))
+			{
+				pluginPanels.remove(c);
+			}
+		}
+
+		getAllPluginPanels();
+		revalidate();
+		getScrollPane().getVerticalScrollBar().setValue(0);
+	}
+
 	private JPanel getAllPlugins()
 	{
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout(0, 10));
 		panel.setBackground(ColorScheme.DARK_GRAY_COLOR);
 
+		if (filterMode.equals("All") ||
+			filterMode.equals("Repositories"))
+		{
+			panel.add(repositories(), BorderLayout.NORTH);
+		}
+
+		pluginPanels = new JPanel();
+		pluginPanels.setLayout(new BorderLayout(0, 10));
+
+		if (!filterMode.equals("Repositories"))
+		{
+			pluginPanels.add(searchBar, BorderLayout.NORTH);
+		}
+
+		panel.add(pluginPanels, BorderLayout.SOUTH);
+
+		getAllPluginPanels();
+
+		return panel;
+	}
+
+	private void getAllPluginPanels()
+	{
 		List<PluginInfo> availablePlugins = updateManager.getAvailablePlugins();
 		List<PluginInfo> plugins = updateManager.getPlugins();
 		List<String> disabledPlugins = externalPluginManager.getDisabledPlugins();
@@ -210,11 +345,20 @@ class ExternalPluginManagerPanel extends PluginPanel
 			}
 		}
 
-		panel.add(repositories(), BorderLayout.NORTH);
-		panel.add(installedPlugins(installedPluginsList), BorderLayout.CENTER);
-		panel.add(availablePlugins(availablePluginsList), BorderLayout.SOUTH);
+		if (filterMode.equals("All") ||
+			filterMode.equals("All plugins") ||
+			filterMode.equals("Installed plugins"))
+		{
+			pluginPanels.add(installedPlugins(installedPluginsList), BorderLayout.CENTER);
+		}
 
-		return panel;
+		if (filterMode.equals("All") ||
+			filterMode.equals("All plugins") ||
+			filterMode.equals("All Available plugins") ||
+			(!filterMode.equals("Repositories") && !filterMode.equals("Installed plugins")))
+		{
+			pluginPanels.add(availablePlugins(availablePluginsList), BorderLayout.SOUTH);
+		}
 	}
 
 	private JLabel titleLabel(String text)
@@ -264,7 +408,15 @@ class ExternalPluginManagerPanel extends PluginPanel
 
 		for (PluginInfo pluginInfo : pluginInfoList)
 		{
-			pluginPanel.add(pluginPanel(pluginInfo, true, deps.contains(pluginInfo.id)));
+			if (matchesSearchTerms(pluginInfo))
+			{
+				pluginPanel.add(pluginPanel(pluginInfo, true, deps.contains(pluginInfo.id)));
+			}
+		}
+
+		if (pluginPanel.getComponentCount() == 0)
+		{
+			return panel;
 		}
 
 		panel.add(titleLabel("Installed plugins"), BorderLayout.NORTH);
@@ -285,10 +437,39 @@ class ExternalPluginManagerPanel extends PluginPanel
 
 		for (PluginInfo pluginInfo : pluginInfoList)
 		{
-			pluginPanel.add(pluginPanel(pluginInfo, false, false));
+			if (!filterMode.equals("All") &&
+				!filterMode.equals("All plugins") &&
+				!filterMode.equals("All Available plugins"))
+			{
+				if (pluginInfo.getRepositoryId().equals(filterMode.replace("'s plugins", "")) && matchesSearchTerms(pluginInfo))
+				{
+					pluginPanel.add(pluginPanel(pluginInfo, false, false));
+				}
+
+				continue;
+			}
+
+			if (matchesSearchTerms(pluginInfo))
+			{
+				pluginPanel.add(pluginPanel(pluginInfo, false, false));
+			}
 		}
 
-		panel.add(titleLabel("Available plugins"), BorderLayout.NORTH);
+		if (pluginPanel.getComponentCount() == 0)
+		{
+			return panel;
+		}
+
+		if (!filterMode.equals("All") &&
+			!filterMode.equals("All plugins") &&
+			!filterMode.equals("All Available plugins"))
+		{
+			panel.add(titleLabel(filterMode), BorderLayout.NORTH);
+		}
+		else
+		{
+			panel.add(titleLabel("Available plugins"), BorderLayout.NORTH);
+		}
 		panel.add(pluginPanel, BorderLayout.SOUTH);
 
 		return panel;
@@ -469,5 +650,20 @@ class ExternalPluginManagerPanel extends PluginPanel
 		}
 
 		buildPanel();
+	}
+
+	boolean matchesSearchTerms(PluginInfo pluginInfo)
+	{
+		final String[] searchTerms = searchBar.getText().toLowerCase().split(" ");
+		final String[] pluginTerms = (pluginInfo.name + " " + pluginInfo.description).toLowerCase().split("[/\\s]");
+		for (String term : searchTerms)
+		{
+			if (Arrays.stream(pluginTerms).noneMatch((t) -> t.contains(term) ||
+				DISTANCE.apply(t, term) > 0.9))
+			{
+				return false;
+			}
+		}
+		return true;
 	}
 }

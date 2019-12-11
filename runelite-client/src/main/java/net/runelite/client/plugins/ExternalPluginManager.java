@@ -19,6 +19,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.swing.JOptionPane;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -199,6 +200,17 @@ class ExternalPluginManager
 		List<Plugin> scannedPlugins = new ArrayList<>(runelitePluginManager.getPlugins());
 		Class<? extends Plugin> clazz = plugin.getClass();
 
+		PluginDescriptor[] pluginDescriptors = clazz.getAnnotationsByType(PluginDescriptor.class);
+
+		for (PluginDescriptor pluginDescriptor : pluginDescriptors)
+		{
+			if (pluginDescriptor.type() == PluginType.EXTERNAL)
+			{
+				log.error("Class {} is using the the new external plugin loader, it should not use PluginType.EXTERNAL", clazz);
+				return;
+			}
+		}
+
 		net.runelite.client.plugins.PluginDependency[] pluginDependencies = clazz.getAnnotationsByType(net.runelite.client.plugins.PluginDependency.class);
 		List<Plugin> deps = new ArrayList<>();
 		for (net.runelite.client.plugins.PluginDependency pluginDependency : pluginDependencies)
@@ -363,18 +375,30 @@ class ExternalPluginManager
 
 	public void install(String pluginId) throws VerifyException
 	{
+
+		if (getDisabledPlugins().contains(pluginId))
+		{
+			this.externalPluginManager.enablePlugin(pluginId);
+			this.externalPluginManager.startPlugin(pluginId);
+
+			return;
+		}
+
 		// Null version returns the last release version of this plugin for given system version
 		try
 		{
-			if (getDisabledPlugins().contains(pluginId))
+			PluginInfo.PluginRelease latest = updateManager.getLastPluginRelease(pluginId);
+
+			if (latest == null)
 			{
-				this.externalPluginManager.enablePlugin(pluginId);
-				this.externalPluginManager.startPlugin(pluginId);
+				JOptionPane.showMessageDialog(null,
+					pluginId + " is outdated and cannot be installed",
+					"Installation error",
+					JOptionPane.ERROR_MESSAGE);
+				return;
 			}
-			else
-			{
-				updateManager.installPlugin(pluginId, null);
-			}
+
+			updateManager.installPlugin(pluginId, null);
 
 			loadPlugin(pluginId);
 		}
@@ -382,6 +406,17 @@ class ExternalPluginManager
 		{
 			for (String dep : ex.getDependencies())
 			{
+				PluginInfo.PluginRelease latest = updateManager.getLastPluginRelease(pluginId);
+
+				if (latest == null)
+				{
+					JOptionPane.showMessageDialog(null,
+						dep + " is outdated and cannot be installed",
+						"Installation error",
+						JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+
 				updateManager.installPlugin(dep, null);
 				externalPluginManager.unloadPlugin(dep);
 			}
