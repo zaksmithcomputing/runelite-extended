@@ -54,7 +54,7 @@ import static net.runelite.api.ItemID.*;
 import net.runelite.api.Player;
 import net.runelite.api.VarPlayer;
 import net.runelite.api.events.AnimationChanged;
-import net.runelite.api.events.CannonballFired;
+import net.runelite.api.events.CannonChanged;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.ItemContainerChanged;
@@ -357,9 +357,14 @@ public class SuppliesTrackerPlugin extends Plugin
 	}
 
 	@Subscribe
-	private void onCannonballFired(CannonballFired cannonballFired)
+	private void onCannonballFired(CannonChanged cannonChanged)
 	{
-		buildEntries(CANNONBALL);
+		if (cannonChanged.getCannonballId() == null)
+		{
+			return;
+		}
+
+		buildEntries(cannonChanged.getCannonballId());
 	}
 
 	@Subscribe
