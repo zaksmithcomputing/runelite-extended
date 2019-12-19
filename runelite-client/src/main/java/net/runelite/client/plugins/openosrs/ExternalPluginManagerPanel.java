@@ -101,7 +101,6 @@ class ExternalPluginManagerPanel extends PluginPanel
 	private String filterMode = "All";
 	private JPanel pluginPanels;
 	private JScrollPane scrollPane;
-	// private int scrollBarPosition = 0;
 
 	@Inject
 	private ExternalPluginManagerPanel(ExternalPluginManager externalPluginManager, EventBus eventBus)

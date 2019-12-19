@@ -25,6 +25,7 @@
 package net.runelite.client.plugins;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.graph.Graph;
@@ -220,13 +221,17 @@ public class PluginManager
 	public void startCorePlugins()
 	{
 		List<Plugin> scannedPlugins = new ArrayList<>(plugins);
-		int loaded = 0;
+		int loaded = 0, started = 0;
 
+		final Stopwatch timer = Stopwatch.createStarted();
 		for (Plugin plugin : scannedPlugins)
 		{
 			try
 			{
-				startPlugin(plugin);
+				if (startPlugin(plugin))
+				{
+					++started;
+				}
 			}
 			catch (PluginInstantiationException ex)
 			{
@@ -238,6 +243,8 @@ public class PluginManager
 
 			RuneLiteSplashScreen.stage(.80, .90, "Starting plugins", loaded, scannedPlugins.size());
 		}
+
+		log.debug("Started {}/{} plugins in {}", started, loaded, timer);
 	}
 
 	List<Plugin> scanAndInstantiate(ClassLoader classLoader, String packageName) throws IOException

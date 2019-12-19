@@ -1,6 +1,8 @@
 package net.runelite.client.plugins.openosrs.externals;
 
 import com.google.gson.JsonSyntaxException;
+import io.reactivex.Observable;
+import io.reactivex.schedulers.Schedulers;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -16,6 +18,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
 import javax.inject.Inject;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -92,6 +96,7 @@ public class PluginManagerPanel extends PluginPanel
 
 	private final ExternalPluginManager externalPluginManager;
 	private final UpdateManager updateManager;
+	private final ScheduledExecutorService executor;
 	private final Font normalFont = FontManager.getRunescapeFont();
 	private final Font smallFont = FontManager.getRunescapeSmallFont();
 	private final IconTextField searchBar = new IconTextField();
@@ -99,19 +104,20 @@ public class PluginManagerPanel extends PluginPanel
 	private final List<PluginInfo> availablePluginsList = new ArrayList<>();
 	private String filterMode = "All";
 	private JPanel repositoriesPanel = new JPanel();
-	private JPanel installedPluginsPanel = new JPanel();
-	private JPanel availablePluginsPanel = new JPanel();
+	private JPanel installedPluginsPanel = new JPanel(new BorderLayout());
+	private JPanel availablePluginsPanel = new JPanel(new BorderLayout());
 	private int scrollBarPosition;
 	private JScrollBar scrollbar;
 	private Set<String> deps;
 
 	@Inject
-	private PluginManagerPanel(ExternalPluginManager externalPluginManager, EventBus eventBus)
+	private PluginManagerPanel(ExternalPluginManager externalPluginManager, EventBus eventBus, ScheduledExecutorService executor)
 	{
 		super(false);
 
 		this.externalPluginManager = externalPluginManager;
 		this.updateManager = externalPluginManager.getUpdateManager();
+		this.executor = executor;
 
 		eventBus.subscribe(ExternalPluginsLoaded.class, "loading-externals", (e) -> {
 			log.info("EXTERNAL LOADED EVENT!");
@@ -313,8 +319,8 @@ public class PluginManagerPanel extends PluginPanel
 				this.installedPlugins();
 				this.availablePlugins();
 
-				installedPluginsPanel.revalidate();
-				availablePluginsPanel.revalidate();
+				//installedPluginsPanel.revalidate();
+				//availablePluginsPanel.revalidate();
 
 				resetScrollValue();
 			});
@@ -492,8 +498,8 @@ public class PluginManagerPanel extends PluginPanel
 
 	private void installedPlugins()
 	{
-		installedPluginsPanel.removeAll();
-		installedPluginsPanel.setLayout(new GridBagLayout());
+		JPanel panel = new JPanel();
+		panel.setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
 
 		for (PluginInfo pluginInfo : installedPluginsList)
@@ -505,15 +511,18 @@ public class PluginManagerPanel extends PluginPanel
 			c.gridy += 1;
 			c.insets = new Insets(5, 0, 0, 0);
 
-			installedPluginsPanel.add(pluginBox, c);
+			panel.add(pluginBox, c);
 			pluginInstallButton(pluginBox.install, pluginInfo, true, deps.contains(pluginInfo.id));
 		}
+
+		installedPluginsPanel.removeAll();
+		installedPluginsPanel.add(panel, BorderLayout.CENTER);
 	}
 
 	private void availablePlugins()
 	{
-		availablePluginsPanel.removeAll();
-		availablePluginsPanel.setLayout(new GridBagLayout());
+		JPanel panel = new JPanel();
+		panel.setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
 
 		for (PluginInfo pluginInfo : availablePluginsList)
@@ -525,9 +534,12 @@ public class PluginManagerPanel extends PluginPanel
 			c.gridy += 1;
 			c.insets = new Insets(5, 0, 0, 0);
 
-			availablePluginsPanel.add(pluginBox, c);
+			panel.add(pluginBox, c);
 			pluginInstallButton(pluginBox.install, pluginInfo, false, false);
 		}
+
+		availablePluginsPanel.removeAll();
+		availablePluginsPanel.add(panel, BorderLayout.CENTER);
 	}
 
 	boolean matchesSearchTerms(PluginInfo pluginInfo)
@@ -567,24 +579,38 @@ public class PluginManagerPanel extends PluginPanel
 					}
 					else
 					{
-						externalPluginManager.uninstall(pluginInfo.id);
+						install.setIcon(null);
+						install.setText("Uninstalling");
+						executor.submit(() -> externalPluginManager.uninstall(pluginInfo.id));
 					}
 				}
 				else
 				{
-					installPlugin(pluginInfo);
+					install.setIcon(null);
+					install.setText("Installing");
+					executor.submit(() -> installPlugin(pluginInfo));
 				}
 			}
 
 			@Override
 			public void mouseEntered(MouseEvent e)
 			{
+				if (install.getText().toLowerCase().contains("installing"))
+				{
+					return;
+				}
+
 				install.setIcon(installed ? hideAction ? DELETE_HOVER_ICON_GRAY : DELETE_HOVER_ICON : ADD_HOVER_ICON);
 			}
 
 			@Override
 			public void mouseExited(MouseEvent e)
 			{
+				if (install.getText().toLowerCase().contains("installing"))
+				{
+					return;
+				}
+
 				install.setIcon(installed ? hideAction ? DELETE_ICON_GRAY : DELETE_ICON : ADD_ICON);
 			}
 		});
@@ -598,7 +624,12 @@ public class PluginManagerPanel extends PluginPanel
 		}
 		catch (VerifyException ex)
 		{
-			JOptionPane.showMessageDialog(null, pluginInfo.name + " could not be installed, the hash could not be verified.", "Error!", JOptionPane.ERROR_MESSAGE);
+			try
+			{
+				SwingUtil.syncExec(() ->
+					JOptionPane.showMessageDialog(null, pluginInfo.name + " could not be installed, the hash could not be verified.", "Error!", JOptionPane.ERROR_MESSAGE));
+			}
+			catch (InvocationTargetException | InterruptedException e) {}
 		}
 	}
 

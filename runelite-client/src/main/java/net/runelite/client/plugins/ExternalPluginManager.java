@@ -377,7 +377,7 @@ class ExternalPluginManager
 		return null;
 	}
 
-	public void install(String pluginId) throws VerifyException
+	public boolean install(String pluginId) throws VerifyException
 	{
 
 		if (getDisabledPlugins().contains(pluginId))
@@ -385,7 +385,7 @@ class ExternalPluginManager
 			this.externalPluginManager.enablePlugin(pluginId);
 			this.externalPluginManager.startPlugin(pluginId);
 
-			return;
+			return true;
 		}
 
 		// Null version returns the last release version of this plugin for given system version
@@ -399,7 +399,7 @@ class ExternalPluginManager
 					pluginId + " is outdated and cannot be installed",
 					"Installation error",
 					JOptionPane.ERROR_MESSAGE);
-				return;
+				return false;
 			}
 
 			updateManager.installPlugin(pluginId, null);
@@ -418,7 +418,7 @@ class ExternalPluginManager
 						dep + " is outdated and cannot be installed",
 						"Installation error",
 						JOptionPane.ERROR_MESSAGE);
-					return;
+					return false;
 				}
 
 				updateManager.installPlugin(dep, null);
@@ -435,6 +435,8 @@ class ExternalPluginManager
 			}
 			loadPlugins();
 		}
+
+		return true;
 	}
 
 	public void uninstall(String pluginId)

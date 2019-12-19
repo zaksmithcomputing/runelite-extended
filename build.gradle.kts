@@ -44,7 +44,6 @@ plugins {
     id(Plugins.latestVersion.first) version Plugins.latestVersion.second
     id(Plugins.grgit.first) version Plugins.grgit.second
 
-    checkstyle
     application
 }
 
@@ -83,9 +82,9 @@ subprojects {
     project.extra["rootPath"] = rootDir.toString().replace("\\", "/")
 
     if (this.name != "runescape-client") {
-        apply(plugin = "checkstyle")
+        apply<CheckstylePlugin>()
 
-        checkstyle {
+        configure<CheckstyleExtension> {
             maxWarnings = 0
             toolVersion = "8.25"
             isShowViolations = true
@@ -111,12 +110,12 @@ subprojects {
         }
     }
 
-    configure<JavaPluginConvention> {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-
     tasks {
+        java {
+            sourceCompatibility = JavaVersion.VERSION_11
+            targetCompatibility = JavaVersion.VERSION_11
+        }
+
         withType<JavaCompile> {
             options.encoding = "UTF-8"
         }
