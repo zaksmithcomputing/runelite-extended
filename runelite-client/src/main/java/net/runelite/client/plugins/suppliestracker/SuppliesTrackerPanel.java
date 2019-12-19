@@ -101,7 +101,7 @@ class SuppliesTrackerPanel extends PluginPanel
 		//Sorts boxes into usage types
 		for (ItemType type : ItemType.values())
 		{
-			SuppliesBox newBox = new SuppliesBox(itemManager, type.getLabel(), plugin, this, type);
+			SuppliesBox newBox = SuppliesBox.of(itemManager, type.getLabel(), plugin, this, type);
 			logsContainer.add(newBox);
 			boxList.add(newBox);
 		}
