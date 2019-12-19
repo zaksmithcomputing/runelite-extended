@@ -28,7 +28,11 @@ package net.runelite.client.plugins.suppliestracker;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import static net.runelite.api.ItemID.*;
+import static net.runelite.api.ItemID.COINS_995;
+import static net.runelite.api.ItemID.SANGUINESTI_STAFF;
+import static net.runelite.api.ItemID.SCYTHE_OF_VITUR;
+import static net.runelite.api.ItemID.TRIDENT_OF_THE_SEAS;
+import static net.runelite.api.ItemID.TRIDENT_OF_THE_SWAMP;
 
 /**
  * The potential types that supplies can be along with a categorization function
@@ -83,12 +87,12 @@ public enum ItemType
 			return ItemType.COINS;
 		}
 		if (item.getName().toLowerCase().contains("ring of") || item.getName().toLowerCase().contains("amulet of") ||
-				item.getName().toLowerCase().contains("bracelet") || item.getName().toLowerCase().contains("necklace"))
+			item.getName().toLowerCase().contains("bracelet") || item.getName().toLowerCase().contains("necklace"))
 		{
 			return ItemType.JEWELLERY;
 		}
 		if (item.getId() == SCYTHE_OF_VITUR || item.getId() == SANGUINESTI_STAFF ||
-				item.getId() == TRIDENT_OF_THE_SEAS || item.getId() == TRIDENT_OF_THE_SWAMP)
+			item.getId() == TRIDENT_OF_THE_SEAS || item.getId() == TRIDENT_OF_THE_SWAMP)
 		{
 			return ItemType.CHARGES;
 		}

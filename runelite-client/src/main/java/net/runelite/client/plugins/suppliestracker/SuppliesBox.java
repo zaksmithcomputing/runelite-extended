@@ -25,6 +25,11 @@
  */
 package net.runelite.client.plugins.suppliestracker;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.GridLayout;
+import java.util.ArrayList;
+import java.util.List;
 import javax.inject.Singleton;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -35,31 +40,24 @@ import javax.swing.border.EmptyBorder;
 import lombok.AccessLevel;
 import lombok.Getter;
 import net.runelite.api.ItemDefinition;
+import static net.runelite.api.ItemID.*;
 import net.runelite.api.util.Text;
 import net.runelite.client.game.ItemManager;
+import static net.runelite.client.plugins.suppliestracker.SuppliesTrackerPlugin.POTION_PATTERN;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.util.AsyncBufferedImage;
 import net.runelite.client.util.QuantityFormatter;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.GridLayout;
-import java.util.ArrayList;
-import java.util.List;
-import static net.runelite.api.ItemID.*;
-import static net.runelite.client.plugins.suppliestracker.SuppliesTrackerPlugin.POTION_PATTERN;
 
 @Singleton
 class SuppliesBox extends JPanel
 {
 	private static final int ITEMS_PER_ROW = 5;
-
+	public final ItemManager itemManager;
+	protected final SuppliesTrackerPlugin plugin;
 	private final JPanel itemContainer = new JPanel();
 	private final JLabel priceLabel = new JLabel();
 	private final JLabel subTitleLabel = new JLabel();
-
-	public final ItemManager itemManager;
-	protected final SuppliesTrackerPlugin plugin;
 	private final SuppliesTrackerPanel panel;
 
 	@Getter(AccessLevel.PACKAGE)
@@ -73,12 +71,11 @@ class SuppliesBox extends JPanel
 
 
 	SuppliesBox(
-				ItemManager itemManager,
-				String id,
-				SuppliesTrackerPlugin plugin,
-				SuppliesTrackerPanel panel,
-				ItemType type
-	)
+		ItemManager itemManager,
+		String id,
+		SuppliesTrackerPlugin plugin,
+		SuppliesTrackerPanel panel,
+		ItemType type)
 	{
 		this.id = id;
 		this.itemManager = itemManager;
@@ -87,6 +84,73 @@ class SuppliesBox extends JPanel
 		this.type = type;
 
 		render();
+	}
+
+	//Switches full cake ids to get the image for slice
+	private static int getSlice(int itemId)
+	{
+		switch (itemId)
+		{
+			case CAKE:
+				itemId = SLICE_OF_CAKE;
+				break;
+			case CHOCOLATE_CAKE:
+				itemId = CHOCOLATE_SLICE;
+				break;
+		}
+		return itemId;
+	}
+
+	//Switches full pizza and pie ids to get the image for half
+	private static int getHalf(int itemId)
+	{
+		switch (itemId)
+		{
+			case ANCHOVY_PIZZA:
+				itemId = _12_ANCHOVY_PIZZA;
+				break;
+			case MEAT_PIZZA:
+				itemId = _12_MEAT_PIZZA;
+				break;
+			case PINEAPPLE_PIZZA:
+				itemId = _12_PINEAPPLE_PIZZA;
+				break;
+			case PLAIN_PIZZA:
+				itemId = _12_PLAIN_PIZZA;
+				break;
+			case REDBERRY_PIE:
+				itemId = HALF_A_REDBERRY_PIE;
+				break;
+			case GARDEN_PIE:
+				itemId = HALF_A_GARDEN_PIE;
+				break;
+			case SUMMER_PIE:
+				itemId = HALF_A_SUMMER_PIE;
+				break;
+			case FISH_PIE:
+				itemId = HALF_A_FISH_PIE;
+				break;
+			case BOTANICAL_PIE:
+				itemId = HALF_A_BOTANICAL_PIE;
+				break;
+			case MUSHROOM_PIE:
+				itemId = HALF_A_MUSHROOM_PIE;
+				break;
+			case ADMIRAL_PIE:
+				itemId = HALF_AN_ADMIRAL_PIE;
+				break;
+			case WILD_PIE:
+				itemId = HALF_A_WILD_PIE;
+				break;
+			case APPLE_PIE:
+				itemId = HALF_AN_APPLE_PIE;
+				break;
+			case MEAT_PIE:
+				itemId = HALF_A_MEAT_PIE;
+				break;
+
+		}
+		return itemId;
 	}
 
 	/**
@@ -167,7 +231,6 @@ class SuppliesBox extends JPanel
 
 	/**
 	 * Clears trackedItems
-	 *
 	 */
 	void clearAll()
 	{
@@ -222,7 +285,6 @@ class SuppliesBox extends JPanel
 	/**
 	 * Builds an arraylist of items based off trackedItems and populates
 	 * boxes with item information
-	 *
 	 */
 	private void buildItems()
 	{
@@ -282,7 +344,7 @@ class SuppliesBox extends JPanel
 	/**
 	 * Changes itemId to single use variant
 	 *
-	 * @param name name to be checked
+	 * @param name   name to be checked
 	 * @param itemId is either changed or returned to method
 	 * @return returns updated itemId
 	 */
@@ -301,73 +363,6 @@ class SuppliesBox extends JPanel
 			return getHalf(itemId);
 		}
 
-		return itemId;
-	}
-
-	//Switches full cake ids to get the image for slice
-	private static int getSlice(int itemId)
-	{
-		switch (itemId)
-		{
-			case CAKE:
-				itemId = SLICE_OF_CAKE;
-				break;
-			case CHOCOLATE_CAKE:
-				itemId = CHOCOLATE_SLICE;
-				break;
-		}
-		return itemId;
-	}
-
-	//Switches full pizza and pie ids to get the image for half
-	private static int getHalf(int itemId)
-	{
-		switch (itemId)
-		{
-			case ANCHOVY_PIZZA:
-				itemId = _12_ANCHOVY_PIZZA;
-				break;
-			case MEAT_PIZZA:
-				itemId = _12_MEAT_PIZZA;
-				break;
-			case PINEAPPLE_PIZZA:
-				itemId = _12_PINEAPPLE_PIZZA;
-				break;
-			case PLAIN_PIZZA:
-				itemId = _12_PLAIN_PIZZA;
-				break;
-			case REDBERRY_PIE:
-				itemId = HALF_A_REDBERRY_PIE;
-				break;
-			case GARDEN_PIE:
-				itemId = HALF_A_GARDEN_PIE;
-				break;
-			case SUMMER_PIE:
-				itemId = HALF_A_SUMMER_PIE;
-				break;
-			case FISH_PIE:
-				itemId = HALF_A_FISH_PIE;
-				break;
-			case BOTANICAL_PIE:
-				itemId = HALF_A_BOTANICAL_PIE;
-				break;
-			case MUSHROOM_PIE:
-				itemId = HALF_A_MUSHROOM_PIE;
-				break;
-			case ADMIRAL_PIE:
-				itemId = HALF_AN_ADMIRAL_PIE;
-				break;
-			case WILD_PIE:
-				itemId = HALF_A_WILD_PIE;
-				break;
-			case APPLE_PIE:
-				itemId = HALF_AN_APPLE_PIE;
-				break;
-			case MEAT_PIE:
-				itemId = HALF_A_MEAT_PIE;
-				break;
-
-		}
 		return itemId;
 	}
 
@@ -404,66 +399,66 @@ class SuppliesBox extends JPanel
 				if (name.toLowerCase().contains("glory"))
 				{
 					tooltip.append("Amulet of Glory(6) x ")
-							.append(qty)
-							.append("/6 (")
-							.append(QuantityFormatter.quantityToStackSize((itemManager.getItemPrice(AMULET_OF_GLORY6) * qty) / 6))
-							.append("gp)");
+						.append(qty)
+						.append("/6 (")
+						.append(QuantityFormatter.quantityToStackSize((itemManager.getItemPrice(AMULET_OF_GLORY6) * qty) / 6))
+						.append("gp)");
 				}
 				else if (name.toLowerCase().contains("dueling"))
 				{
 					tooltip.append("Ring of Dueling(8) x ")
-							.append(qty)
-							.append("/8 (")
-							.append(QuantityFormatter.quantityToStackSize((itemManager.getItemPrice(RING_OF_DUELING8) * qty) / 8))
-							.append("gp)");
+						.append(qty)
+						.append("/8 (")
+						.append(QuantityFormatter.quantityToStackSize((itemManager.getItemPrice(RING_OF_DUELING8) * qty) / 8))
+						.append("gp)");
 				}
 				else if (name.toLowerCase().contains("wealth"))
 				{
 					tooltip.append("Ring of Wealth(5) x ")
-							.append(qty)
-							.append("/5 (")
-							.append(QuantityFormatter.quantityToStackSize((itemManager.getItemPrice(RING_OF_WEALTH_5) * qty) / 5))
-							.append("gp)");
+						.append(qty)
+						.append("/5 (")
+						.append(QuantityFormatter.quantityToStackSize((itemManager.getItemPrice(RING_OF_WEALTH_5) * qty) / 5))
+						.append("gp)");
 				}
 				else if (name.toLowerCase().contains("combat"))
 				{
 					tooltip.append("Combat Bracelet(6) x ")
-							.append(qty)
-							.append("/6 (")
-							.append(QuantityFormatter.quantityToStackSize((itemManager.getItemPrice(COMBAT_BRACELET6) * qty) / 6))
-							.append("gp)");
+						.append(qty)
+						.append("/6 (")
+						.append(QuantityFormatter.quantityToStackSize((itemManager.getItemPrice(COMBAT_BRACELET6) * qty) / 6))
+						.append("gp)");
 				}
 				else if (name.toLowerCase().contains("games"))
 				{
 					tooltip.append("Games Necklace(8) x ")
-							.append(qty)
-							.append("/8 (")
-							.append(QuantityFormatter.quantityToStackSize((itemManager.getItemPrice(GAMES_NECKLACE8) * qty) / 8))
-							.append("gp)");
+						.append(qty)
+						.append("/8 (")
+						.append(QuantityFormatter.quantityToStackSize((itemManager.getItemPrice(GAMES_NECKLACE8) * qty) / 8))
+						.append("gp)");
 				}
 				else if (name.toLowerCase().contains("skills"))
 				{
 					tooltip.append("Skills Necklace(6) x ")
-							.append(qty)
-							.append("/6 (")
-							.append(QuantityFormatter.quantityToStackSize((itemManager.getItemPrice(SKILLS_NECKLACE6) * qty) / 6))
-							.append("gp)");
+						.append(qty)
+						.append("/6 (")
+						.append(QuantityFormatter.quantityToStackSize((itemManager.getItemPrice(SKILLS_NECKLACE6) * qty) / 6))
+						.append("gp)");
 				}
 				else if (name.toLowerCase().contains("passage"))
 				{
 					tooltip.append("Necklace of Passage(5) x ")
-							.append(qty)
-							.append("/5 (")
-							.append(QuantityFormatter.quantityToStackSize((itemManager.getItemPrice(NECKLACE_OF_PASSAGE5) * qty) / 5))
-							.append("gp)");
+						.append(qty)
+						.append("/5 (")
+						.append(QuantityFormatter.quantityToStackSize((itemManager.getItemPrice(NECKLACE_OF_PASSAGE5) * qty) / 5))
+						.append("gp)");
 				}
 				else if (name.toLowerCase().contains("burning"))
 				{
 					tooltip.append("Burning Amulet(5) x ")
-							.append(qty)
-							.append("/5 (")
-							.append(QuantityFormatter.quantityToStackSize((itemManager.getItemPrice(BURNING_AMULET5) * qty) / 5))
-							.append("gp)");
+						.append(qty)
+						.append("/5 (")
+						.append(QuantityFormatter.quantityToStackSize((itemManager.getItemPrice(BURNING_AMULET5) * qty) / 5))
+						.append("gp)");
 				}
 				return tooltip.toString();
 
@@ -473,112 +468,112 @@ class SuppliesBox extends JPanel
 				{
 					case SCYTHE_OF_VITUR:
 						tooltip.append("<html>")
-								.append("Blood Rune x ")
-								.append(qty * 3)
-								.append(" (")
-								.append(QuantityFormatter.quantityToStackSize(
-										itemManager.getItemPrice(BLOOD_RUNE) * qty * 3)
-								)
-								.append("gp)")
-								.append("<br>")
-								.append("Vial of Blood x ")
-								.append(qty).append("/100 (")
-								.append(QuantityFormatter.quantityToStackSize(
-										(itemManager.getItemPrice(VIAL_OF_BLOOD_22446) * qty) / 100)
-								)
-								.append("gp)")
-								.append("</br>")
-								.append("</html>");
+							.append("Blood Rune x ")
+							.append(qty * 3)
+							.append(" (")
+							.append(QuantityFormatter.quantityToStackSize(
+								itemManager.getItemPrice(BLOOD_RUNE) * qty * 3)
+							)
+							.append("gp)")
+							.append("<br>")
+							.append("Vial of Blood x ")
+							.append(qty).append("/100 (")
+							.append(QuantityFormatter.quantityToStackSize(
+								(itemManager.getItemPrice(VIAL_OF_BLOOD_22446) * qty) / 100)
+							)
+							.append("gp)")
+							.append("</br>")
+							.append("</html>");
 						return tooltip.toString();
 
 					case SANGUINESTI_STAFF:
 
 						tooltip.append("Blood Rune x ")
-								.append(qty * 3).append(" (")
-								.append(QuantityFormatter.quantityToStackSize(
-										itemManager.getItemPrice(BLOOD_RUNE) * qty * 3)
-								)
-								.append("gp)");
+							.append(qty * 3).append(" (")
+							.append(QuantityFormatter.quantityToStackSize(
+								itemManager.getItemPrice(BLOOD_RUNE) * qty * 3)
+							)
+							.append("gp)");
 						return tooltip.toString();
 
 					case TRIDENT_OF_THE_SEAS:
 						tooltip.append("<html>")
-								.append("Chaos Rune x ")
-								.append(qty).append(" (")
-								.append(QuantityFormatter.quantityToStackSize(
-										itemManager.getItemPrice(CHAOS_RUNE) * qty)
-								)
-								.append("gp)")
-								.append("<br>")
-								.append("Death Rune x ")
-								.append(qty)
-								.append(" (")
-								.append(QuantityFormatter.quantityToStackSize(
-										itemManager.getItemPrice(DEATH_RUNE) * qty)
-								)
-								.append("gp)")
-								.append("</br>")
-								.append("<br>")
-								.append("Fire Rune x ")
-								.append(qty * 5)
-								.append(" (")
-								.append(QuantityFormatter.quantityToStackSize(
-										(itemManager.getItemPrice(FIRE_RUNE) * qty) * 5)
-								)
-								.append("gp)")
-								.append("</br>")
-								.append("<br>")
-								.append("Coins x ")
-								.append(qty * 10)
-								.append(" (")
-								.append(QuantityFormatter.quantityToStackSize(
-										(itemManager.getItemPrice(COINS_995) * qty) * 10)
-								)
-								.append("gp)")
-								.append("</br>")
-								.append("</html>");
+							.append("Chaos Rune x ")
+							.append(qty).append(" (")
+							.append(QuantityFormatter.quantityToStackSize(
+								itemManager.getItemPrice(CHAOS_RUNE) * qty)
+							)
+							.append("gp)")
+							.append("<br>")
+							.append("Death Rune x ")
+							.append(qty)
+							.append(" (")
+							.append(QuantityFormatter.quantityToStackSize(
+								itemManager.getItemPrice(DEATH_RUNE) * qty)
+							)
+							.append("gp)")
+							.append("</br>")
+							.append("<br>")
+							.append("Fire Rune x ")
+							.append(qty * 5)
+							.append(" (")
+							.append(QuantityFormatter.quantityToStackSize(
+								(itemManager.getItemPrice(FIRE_RUNE) * qty) * 5)
+							)
+							.append("gp)")
+							.append("</br>")
+							.append("<br>")
+							.append("Coins x ")
+							.append(qty * 10)
+							.append(" (")
+							.append(QuantityFormatter.quantityToStackSize(
+								(itemManager.getItemPrice(COINS_995) * qty) * 10)
+							)
+							.append("gp)")
+							.append("</br>")
+							.append("</html>");
 						return tooltip.toString();
 
 					case TRIDENT_OF_THE_SWAMP:
 						tooltip.append("<html>")
-								.append("Chaos Rune x ")
-								.append(qty)
-								.append(" (")
-								.append(QuantityFormatter.quantityToStackSize(
-										itemManager.getItemPrice(CHAOS_RUNE) * qty)
-								)
-								.append("gp)")
-								.append("<br>")
-								.append("Death Rune x ")
-								.append(qty)
-								.append(" (")
-								.append(QuantityFormatter.quantityToStackSize(
-										(itemManager.getItemPrice(DEATH_RUNE) * qty))
-								)
-								.append("gp)")
-								.append("</br>")
-								.append("<br>")
-								.append("Fire Rune x ")
-								.append(qty * 5)
-								.append(" (")
-								.append(QuantityFormatter.quantityToStackSize(
-										(itemManager.getItemPrice(FIRE_RUNE) * qty) * 5)
-								)
-								.append("gp)")
-								.append("</br>")
-								.append("<br>")
-								.append("Zulrah's Scales x ")
-								.append(qty)
-								.append(" (")
-								.append(QuantityFormatter.quantityToStackSize(
-										(itemManager.getItemPrice(ZULRAHS_SCALES) * qty))
-								)
-								.append("gp)")
-								.append("</br>")
-								.append("</html>");
+							.append("Chaos Rune x ")
+							.append(qty)
+							.append(" (")
+							.append(QuantityFormatter.quantityToStackSize(
+								itemManager.getItemPrice(CHAOS_RUNE) * qty)
+							)
+							.append("gp)")
+							.append("<br>")
+							.append("Death Rune x ")
+							.append(qty)
+							.append(" (")
+							.append(QuantityFormatter.quantityToStackSize(
+								(itemManager.getItemPrice(DEATH_RUNE) * qty))
+							)
+							.append("gp)")
+							.append("</br>")
+							.append("<br>")
+							.append("Fire Rune x ")
+							.append(qty * 5)
+							.append(" (")
+							.append(QuantityFormatter.quantityToStackSize(
+								(itemManager.getItemPrice(FIRE_RUNE) * qty) * 5)
+							)
+							.append("gp)")
+							.append("</br>")
+							.append("<br>")
+							.append("Zulrah's Scales x ")
+							.append(qty)
+							.append(" (")
+							.append(QuantityFormatter.quantityToStackSize(
+								(itemManager.getItemPrice(ZULRAHS_SCALES) * qty))
+							)
+							.append("gp)")
+							.append("</br>")
+							.append("</html>");
 						return tooltip.toString();
 				}
-			//If not jewellery or weapon charge check if potion and build tooltip
+				//If not jewellery or weapon charge check if potion and build tooltip
 			default:
 				if (SuppliesTrackerPlugin.isPotion(name))
 				{
