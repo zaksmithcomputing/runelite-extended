@@ -121,6 +121,7 @@ import net.runelite.client.ui.components.MinimumSizedPanel;
 import net.runelite.client.ui.components.colorpicker.ColorPickerManager;
 import net.runelite.client.ui.components.colorpicker.RuneliteColorPicker;
 import net.runelite.client.util.ColorUtil;
+import net.runelite.client.util.DeferredDocumentChangedListener;
 import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.MiscUtils;
 import static net.runelite.client.util.SwingUtil.syncExec;

@@ -1,4 +1,4 @@
-package net.runelite.client.plugins.config;
+package net.runelite.client.util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,19 +8,19 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-class DeferredDocumentChangedListener implements DocumentListener
+public class DeferredDocumentChangedListener implements DocumentListener
 {
 	private final Timer timer;
 	private final List<ChangeListener> listeners;
 
-	DeferredDocumentChangedListener()
+	public DeferredDocumentChangedListener()
 	{
 		listeners = new ArrayList<>(25);
-		timer = new Timer(350, e -> fireStateChanged());
+		timer = new Timer(200, e -> fireStateChanged());
 		timer.setRepeats(false);
 	}
 
-	void addChangeListener(ChangeListener listener)
+	public void addChangeListener(ChangeListener listener)
 	{
 		listeners.add(listener);
 	}

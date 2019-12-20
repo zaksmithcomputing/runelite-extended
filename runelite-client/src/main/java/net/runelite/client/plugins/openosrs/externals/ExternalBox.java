@@ -21,6 +21,7 @@ public class ExternalBox extends JPanel
 	private static final Font normalFont = FontManager.getRunescapeFont();
 	private static final Font smallFont = FontManager.getRunescapeSmallFont();
 
+	PluginInfo pluginInfo;
 	JLabel install = new JLabel();
 	JMultilineLabel description = new JMultilineLabel();
 

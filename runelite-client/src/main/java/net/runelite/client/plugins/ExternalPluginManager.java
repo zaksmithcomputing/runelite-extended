@@ -6,6 +6,7 @@ import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Module;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
@@ -34,6 +35,7 @@ import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.events.ExternalPluginChanged;
 import net.runelite.client.events.ExternalPluginsLoaded;
 import net.runelite.client.ui.RuneLiteSplashScreen;
+import net.runelite.client.util.SwingUtil;
 import org.pf4j.DefaultPluginManager;
 import org.pf4j.DependencyResolver;
 import org.pf4j.JarPluginLoader;
@@ -129,12 +131,12 @@ class ExternalPluginManager
 		}
 		catch (MalformedURLException e)
 		{
-			return false;
+			return true;
 		}
 		DefaultPluginManager testPluginManager = new DefaultPluginManager(EXTERNALPLUGIN_DIR.toPath());
 		UpdateManager updateManager = new UpdateManager(testPluginManager, repositories);
 
-		return updateManager.getPlugins().size() > 0;
+		return updateManager.getPlugins().size() <= 0;
 	}
 
 	public void startExternalPluginManager()
@@ -196,7 +198,7 @@ class ExternalPluginManager
 		openOSRSConfig.setExternalRepositories(config.toString());
 	}
 
-	private void instantiatePlugin(Plugin plugin) throws PluginInstantiationException
+	private void instantiatePlugin(String pluginId, Plugin plugin) throws PluginInstantiationException
 	{
 		List<Plugin> scannedPlugins = new ArrayList<>(runelitePluginManager.getPlugins());
 		Class<? extends Plugin> clazz = plugin.getClass();
@@ -217,7 +219,7 @@ class ExternalPluginManager
 		for (net.runelite.client.plugins.PluginDependency pluginDependency : pluginDependencies)
 		{
 			Optional<Plugin> dependency = scannedPlugins.stream().filter(p -> p.getClass() == pluginDependency.value()).findFirst();
-			if (!dependency.isPresent())
+			if (dependency.isEmpty())
 			{
 				throw new PluginInstantiationException("Unmet dependency for " + clazz.getSimpleName() + ": " + pluginDependency.value().getSimpleName());
 			}
@@ -269,13 +271,13 @@ class ExternalPluginManager
 		}
 
 		runelitePluginManager.add(plugin);
-		eventBus.post(ExternalPluginChanged.class, new ExternalPluginChanged(plugin, true));
+		eventBus.post(ExternalPluginChanged.class, new ExternalPluginChanged(pluginId, plugin, true));
 	}
 
 	public void loadPlugins()
 	{
 		this.externalPluginManager.startPlugins();
-		List<PluginWrapper> startedPlugins = this.externalPluginManager.getStartedPlugins();
+		List<PluginWrapper> startedPlugins = getStartedPlugins();
 		int index = 1;
 
 		for (PluginWrapper plugin : startedPlugins)
@@ -285,29 +287,43 @@ class ExternalPluginManager
 		}
 
 		eventBus.post(ExternalPluginsLoaded.class, new ExternalPluginsLoaded());
-		log.info("EXTERNAL LOADED!");
 	}
 
 	private void loadPlugin(String pluginId)
 	{
-		List<Plugin> extensions = externalPluginManager.getExtensions(Plugin.class, pluginId);
-		for (Plugin plugin : extensions)
+		try
+		{
+			List<Plugin> extensions = externalPluginManager.getExtensions(Plugin.class, pluginId);
+			for (Plugin plugin : extensions)
+			{
+				try
+				{
+					instantiatePlugin(pluginId, plugin);
+				}
+				catch (PluginInstantiationException e)
+				{
+					log.warn("Error instantiating plugin!", e);
+					return;
+				}
+			}
+		}
+		catch (NoClassDefFoundError ex)
 		{
 			try
 			{
-				instantiatePlugin(plugin);
+				SwingUtil.syncExec(() ->
+					JOptionPane.showMessageDialog(null,
+						pluginId + " could not be loaded due to the following error: " + ex.getMessage(),
+						"External plugin error",
+						JOptionPane.ERROR_MESSAGE));
 			}
-			catch (PluginInstantiationException e)
-			{
-				log.warn("Error instantiating plugin!", e);
-				return;
-			}
+			catch (InvocationTargetException | InterruptedException ignored) {}
 		}
 	}
 
 	private void stopPlugins()
 	{
-		List<PluginWrapper> startedPlugins = ImmutableList.copyOf(externalPluginManager.getStartedPlugins());
+		List<PluginWrapper> startedPlugins = ImmutableList.copyOf(getStartedPlugins());
 
 		for (PluginWrapper pluginWrapper : startedPlugins)
 		{
@@ -326,7 +342,7 @@ class ExternalPluginManager
 					runelitePluginManager.stopPlugin(plugin);
 					runelitePluginManager.remove(plugin);
 
-					eventBus.post(ExternalPluginChanged.class, new ExternalPluginChanged(plugin, false));
+					eventBus.post(ExternalPluginChanged.class, new ExternalPluginChanged(pluginId, plugin, false));
 				}
 				catch (PluginInstantiationException ex)
 				{
@@ -339,7 +355,7 @@ class ExternalPluginManager
 
 	private Path stopPlugin(String pluginId)
 	{
-		List<PluginWrapper> startedPlugins = ImmutableList.copyOf(externalPluginManager.getStartedPlugins());
+		List<PluginWrapper> startedPlugins = ImmutableList.copyOf(getStartedPlugins());
 
 		for (PluginWrapper pluginWrapper : startedPlugins)
 		{
@@ -362,7 +378,7 @@ class ExternalPluginManager
 					runelitePluginManager.stopPlugin(plugin);
 					runelitePluginManager.remove(plugin);
 
-					eventBus.post(ExternalPluginChanged.class, new ExternalPluginChanged(plugin, false));
+					eventBus.post(ExternalPluginChanged.class, new ExternalPluginChanged(pluginId, plugin, false));
 
 					return pluginWrapper.getPluginPath();
 				}
@@ -377,7 +393,7 @@ class ExternalPluginManager
 		return null;
 	}
 
-	public boolean install(String pluginId) throws VerifyException
+	public void install(String pluginId) throws VerifyException
 	{
 
 		if (getDisabledPlugins().contains(pluginId))
@@ -385,7 +401,14 @@ class ExternalPluginManager
 			this.externalPluginManager.enablePlugin(pluginId);
 			this.externalPluginManager.startPlugin(pluginId);
 
-			return true;
+			loadPlugin(pluginId);
+
+			return;
+		}
+
+		if (getStartedPlugins().stream().anyMatch(ev -> ev.getPluginId().equals(pluginId)))
+		{
+			return;
 		}
 
 		// Null version returns the last release version of this plugin for given system version
@@ -395,11 +418,17 @@ class ExternalPluginManager
 
 			if (latest == null)
 			{
-				JOptionPane.showMessageDialog(null,
-					pluginId + " is outdated and cannot be installed",
-					"Installation error",
-					JOptionPane.ERROR_MESSAGE);
-				return false;
+				try
+				{
+					SwingUtil.syncExec(() ->
+						JOptionPane.showMessageDialog(null,
+							pluginId + " is outdated and cannot be installed",
+							"Installation error",
+							JOptionPane.ERROR_MESSAGE));
+				}
+				catch (InvocationTargetException | InterruptedException ignored) {}
+
+				return;
 			}
 
 			updateManager.installPlugin(pluginId, null);
@@ -408,35 +437,16 @@ class ExternalPluginManager
 		}
 		catch (DependencyResolver.DependenciesNotFoundException ex)
 		{
+			uninstall(pluginId);
+
 			for (String dep : ex.getDependencies())
 			{
-				PluginInfo.PluginRelease latest = updateManager.getLastPluginRelease(pluginId);
+				install(dep);
+			}
 
-				if (latest == null)
-				{
-					JOptionPane.showMessageDialog(null,
-						dep + " is outdated and cannot be installed",
-						"Installation error",
-						JOptionPane.ERROR_MESSAGE);
-					return false;
-				}
-
-				updateManager.installPlugin(dep, null);
-				externalPluginManager.unloadPlugin(dep);
-			}
-			externalPluginManager.unloadPlugin(pluginId);
-			stopPlugins();
-			try
-			{
-				externalPluginManager.loadPlugins();
-			}
-			catch (PluginAlreadyLoadedException ignored)
-			{
-			}
-			loadPlugins();
+			install(pluginId);
 		}
 
-		return true;
 	}
 
 	public void uninstall(String pluginId)
@@ -474,7 +484,7 @@ class ExternalPluginManager
 	public Set<String> getDependencies()
 	{
 		Set<String> deps = new HashSet<>();
-		List<PluginWrapper> startedPlugins = externalPluginManager.getStartedPlugins();
+		List<PluginWrapper> startedPlugins = getStartedPlugins();
 
 		for (PluginWrapper pluginWrapper : startedPlugins)
 		{

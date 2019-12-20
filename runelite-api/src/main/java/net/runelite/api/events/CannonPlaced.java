@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Owain van Brakel <https://github.com/Owain94>
+ * Copyright (c) 2019, Davis Cook <https://github.com/daviscook477>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,16 +22,33 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.events;
+package net.runelite.api.events;
 
-import lombok.Data;
-import net.runelite.api.events.Event;
-import net.runelite.client.plugins.Plugin;
+import javax.annotation.Nullable;
+import lombok.Value;
+import net.runelite.api.GameObject;
+import net.runelite.api.coords.WorldPoint;
 
-@Data
-public class ExternalPluginChanged implements Event
+/**
+ * an event posted when a cannonball is fired
+ */
+@Value
+public class CannonPlaced implements Event
 {
-	private final String pluginId;
-	private final Plugin plugin;
-	private final boolean added;
+	/**
+	 * Cannon placed or picked up.
+	 */
+	private final boolean placed;
+
+	/**
+	 * The location of the cannon.
+	 */
+	@Nullable
+	private final WorldPoint cannonLocation;
+
+	/**
+	 * The cannon object.
+	 */
+	@Nullable
+	private final GameObject cannon;
 }
