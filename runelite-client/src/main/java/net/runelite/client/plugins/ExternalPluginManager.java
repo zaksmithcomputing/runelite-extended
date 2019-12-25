@@ -41,7 +41,6 @@ import org.pf4j.DependencyResolver;
 import org.pf4j.JarPluginLoader;
 import org.pf4j.JarPluginRepository;
 import org.pf4j.ManifestPluginDescriptorFinder;
-import org.pf4j.PluginAlreadyLoadedException;
 import org.pf4j.PluginDependency;
 import org.pf4j.PluginDescriptorFinder;
 import org.pf4j.PluginLoader;
@@ -137,6 +136,11 @@ class ExternalPluginManager
 		UpdateManager updateManager = new UpdateManager(testPluginManager, repositories);
 
 		return updateManager.getPlugins().size() <= 0;
+	}
+
+	public static <T> Predicate<T> not(Predicate<T> t)
+	{
+		return t.negate();
 	}
 
 	public void startExternalPluginManager()
@@ -317,7 +321,9 @@ class ExternalPluginManager
 						"External plugin error",
 						JOptionPane.ERROR_MESSAGE));
 			}
-			catch (InvocationTargetException | InterruptedException ignored) {}
+			catch (InvocationTargetException | InterruptedException ignored)
+			{
+			}
 		}
 	}
 
@@ -426,7 +432,9 @@ class ExternalPluginManager
 							"Installation error",
 							JOptionPane.ERROR_MESSAGE));
 				}
-				catch (InvocationTargetException | InterruptedException ignored) {}
+				catch (InvocationTargetException | InterruptedException ignored)
+				{
+				}
 
 				return;
 			}
@@ -495,11 +503,6 @@ class ExternalPluginManager
 		}
 
 		return deps;
-	}
-
-	public static <T> Predicate<T> not(Predicate<T> t)
-	{
-		return t.negate();
 	}
 
 	public List<String> getDisabledPlugins()

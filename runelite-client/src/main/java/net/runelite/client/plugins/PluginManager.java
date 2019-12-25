@@ -70,7 +70,6 @@ import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.config.RuneLiteConfig;
 import net.runelite.client.eventbus.EventBus;
-import net.runelite.client.events.ExternalPluginsLoaded;
 import net.runelite.client.events.PluginChanged;
 import net.runelite.client.events.SessionClose;
 import net.runelite.client.events.SessionOpen;

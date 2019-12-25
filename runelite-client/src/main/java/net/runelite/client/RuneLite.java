@@ -97,11 +97,15 @@ public class RuneLite
 	public static final File EXTERNALPLUGIN_DIR = new File(RUNELITE_DIR, "externalmanager");
 	public static final File SCREENSHOT_DIR = new File(RUNELITE_DIR, "screenshots");
 	public static final File LOGS_DIR = new File(RUNELITE_DIR, "logs");
+	public static final File PLUGINS_DIR = new File(RUNELITE_DIR, "plugins");
 	public static final Locale SYSTEM_LOCALE = Locale.getDefault();
 	public static boolean allowPrivateServer = false;
 
 	@Getter
 	private static Injector injector;
+
+	@Inject
+	public DiscordService discordService;
 
 	@Inject
 	private PluginManager pluginManager;
@@ -114,9 +118,6 @@ public class RuneLite
 
 	@Inject
 	private SessionManager sessionManager;
-
-	@Inject
-	public DiscordService discordService;
 
 	@Inject
 	private ClientSessionManager clientSessionManager;
@@ -317,6 +318,12 @@ public class RuneLite
 		log.info("Client initialization took {}ms. Uptime: {}ms", end - start, uptime);
 	}
 
+	@VisibleForTesting
+	public static void setInjector(Injector injector)
+	{
+		RuneLite.injector = injector;
+	}
+
 	private void start() throws Exception
 	{
 		// Load RuneLite or Vanilla client
@@ -421,11 +428,5 @@ public class RuneLite
 		configManager.sendConfig();
 		clientSessionManager.shutdown();
 		discordService.close();
-	}
-
-	@VisibleForTesting
-	public static void setInjector(Injector injector)
-	{
-		RuneLite.injector = injector;
 	}
 }

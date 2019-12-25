@@ -26,7 +26,6 @@ package net.runelite.client.events;
 
 import lombok.Data;
 import net.runelite.api.events.Event;
-import net.runelite.client.plugins.Plugin;
 
 @Data
 public class ExternalPluginsLoaded implements Event {}
